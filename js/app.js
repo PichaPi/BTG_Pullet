@@ -391,7 +391,7 @@
     if (act === 'xlsx') {
       try { toast('กำลังสร้างไฟล์ Excel…'); await X.xlsx(state.data, state.ref, groups()); } catch (err) { toast(err.message); }
     }
-    if (act === 'json') X.json(state.data);
+    if (act === 'json') { try { await X.json(state.data); } catch (err) { toast(err.message); } }
     if (act === 'import') $('#importFile').click();
     if (act === 'github') openGitHub();
     if (act === 'reload') reload();

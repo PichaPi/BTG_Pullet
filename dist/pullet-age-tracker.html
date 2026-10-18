@@ -907,19 +907,32 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
       var list = C.sortFlocks(data.flocks.filter(function (f) { return f.group === g; }), refISO);
       XLSX.utils.book_append_sheet(wb, buildSheet(XLSX, g, list, refISO, C), sheetName(g));
     });
-    XLSX.writeFile(wb, 'Pullet_Age_' + refISO + '.xlsx');
+    var buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+    return download('Pullet_Age_' + refISO + '.xlsx', buf, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   }
 
-  function download(name, text, type) {
+  /* บน claude.ai Artifact ต้องบันทึกไฟล์ผ่าน capability "downloads"; นอกนั้นใช้ลิงก์ดาวน์โหลดปกติ */
+  async function download(name, data, type) {
+    if (root.claude && typeof root.claude.use === 'function') {
+      var dl = null;
+      try { dl = await root.claude.use('downloads'); } catch (e) { dl = null; }
+      if (dl) {
+        try { await dl.save({ filename: name, data: data }); } catch (e) {
+          if (e && e.code === 'declined') return;
+          throw new Error('บันทึกไฟล์ไม่สำเร็จ (' + (e && (e.code || e.message)) + ')');
+        }
+        return;
+      }
+    }
     var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: type }));
+    a.href = URL.createObjectURL(new Blob([data], { type: type }));
     a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
   root.PulletExport = {
     xlsx: exportXlsx,
-    json: function (data) { download('flocks_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json'); }
+    json: function (data) { return download('flocks_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json'); }
   };
 })(this);
 </script>
@@ -1317,7 +1330,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     if (act === 'xlsx') {
       try { toast('กำลังสร้างไฟล์ Excel…'); await X.xlsx(state.data, state.ref, groups()); } catch (err) { toast(err.message); }
     }
-    if (act === 'json') X.json(state.data);
+    if (act === 'json') { try { await X.json(state.data); } catch (err) { toast(err.message); } }
     if (act === 'import') $('#importFile').click();
     if (act === 'github') openGitHub();
     if (act === 'reload') reload();
