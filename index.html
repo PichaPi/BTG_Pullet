@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pullet Age Tracker</title>
+  <meta name="description" content="ตารางติดตามอายุไก่สาว — วันย้าย และแผนเก็บตัวอย่าง TITER / PCR">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='18' rx='10' ry='12' fill='%23E8A33D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>ตารางติดตามอายุไก่สาว</h1>
+        <p class="sub">วันย้าย · แผนเก็บตัวอย่าง TITER / PCR</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <label class="refdate" title="วันที่ใช้คำนวณอายุ (ค่าเริ่มต้น = วันนี้)">
+        <span>วันที่อ้างอิง</span>
+        <input type="date" id="refDate">
+        <button type="button" class="link-btn" id="refToday" hidden>กลับเป็นวันนี้</button>
+      </label>
+      <button type="button" class="sync-chip" id="syncChip" data-state="local">
+        <span class="dot"></span><span id="syncText">บันทึกในเครื่องนี้</span>
+      </button>
+      <div class="menu-wrap">
+        <button type="button" class="btn ghost" id="menuBtn" aria-haspopup="true" aria-expanded="false">เพิ่มเติม ▾</button>
+        <div class="menu" id="menu" hidden>
+          <button type="button" data-act="xlsx">ส่งออก Excel (.xlsx พร้อมสูตร)</button>
+          <button type="button" data-act="json">ส่งออกข้อมูล (.json)</button>
+          <button type="button" data-act="import">นำเข้าข้อมูล (.json)</button>
+          <hr>
+          <button type="button" data-act="github">ตั้งค่าบันทึกขึ้น GitHub</button>
+          <button type="button" data-act="reload">โหลดข้อมูลล่าสุด</button>
+        </div>
+      </div>
+      <button type="button" class="btn primary" id="addBtn">+ เพิ่มฝูง</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="banner" id="banner" hidden></div>
+
+    <section class="kpis" id="kpis" aria-label="สรุป"></section>
+
+    <section class="panel" id="duePanel" aria-labelledby="dueTitle">
+      <div class="panel-head">
+        <h2 id="dueTitle">งานเก็บตัวอย่าง 7 วันข้างหน้า</h2>
+        <span class="muted" id="dueRange"></span>
+      </div>
+      <ul class="due-list" id="dueList"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="listTitle">
+      <div class="panel-head wrap">
+        <h2 id="listTitle">ฝูงไก่สาว <span class="muted small">เรียงตามวันย้ายที่ใกล้ที่สุด</span></h2>
+        <div class="filters">
+          <div class="seg" id="groupSeg" role="tablist"></div>
+          <input type="search" id="search" placeholder="ค้นหาฟาร์ม / โรงเรือน / Vendor">
+          <label class="check"><input type="checkbox" id="showMoved" checked> แสดงที่ย้ายแล้ว</label>
+          <label class="check"><input type="checkbox" id="onlyIssue"> เฉพาะข้อมูลผิดปกติ</label>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="grid" id="grid">
+          <thead>
+            <tr class="band">
+              <th colspan="5" class="b-info">ข้อมูลฝูงไก่สาว</th>
+              <th colspan="3" class="b-age">อายุปัจจุบัน</th>
+              <th colspan="4" class="b-move">แผนย้าย / จับ</th>
+              <th colspan="3" class="b-s">วันเก็บตัวอย่าง (ย้อนจากวันย้าย)</th>
+              <th class="b-chk">ตรวจสอบ</th>
+            </tr>
+            <tr>
+              <th class="sticky">ฟาร์ม / โรงเรือน</th>
+              <th>Vendor</th>
+              <th>รุ่น</th>
+              <th class="num">จำนวนไก่</th>
+              <th>วันเริ่มเลี้ยง</th>
+              <th class="num">อายุ (วัน)</th>
+              <th class="num">สัปดาห์-วัน</th>
+              <th>ครบ 105 วัน</th>
+              <th>วันย้าย</th>
+              <th class="num">อายุวันย้าย</th>
+              <th class="num">เหลือ (วัน)</th>
+              <th>สถานะ</th>
+              <th class="sh">ก่อนจับ 17 วัน<small>TITER + PCR</small></th>
+              <th class="sh">ก่อนจับ 10 วัน<small>TITER + PCR</small></th>
+              <th class="sh">ก่อนจับ 3 วัน<small>PCR</small></th>
+              <th>ข้อมูลผิดปกติ</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+          <tfoot id="gridFoot"></tfoot>
+        </table>
+      </div>
+      <div class="cards" id="cards"></div>
+      <p class="empty" id="empty" hidden>ไม่พบฝูงตามเงื่อนไขที่เลือก</p>
+    </section>
+
+    <details class="panel notes">
+      <summary>วิธีคำนวณ (เหมือนไฟล์ Excel เดิม)</summary>
+      <ul>
+        <li><b>อายุ (วัน)</b> = วันที่อ้างอิง − วันเริ่มเลี้ยง · <b>สัปดาห์-วัน</b> เช่น 18-6 = 18 สัปดาห์ 6 วัน (ตัวเลขสีเขียวเมื่ออายุ ≥ 105 วัน)</li>
+        <li><b>ครบ 105 วัน</b> = วันเริ่มเลี้ยง + 105 วัน · <b>อายุวันย้าย</b> = วันย้าย − วันเริ่มเลี้ยง · <b>เหลืออีก</b> = วันย้าย − วันที่อ้างอิง</li>
+        <li><b>สถานะ</b>: ไม่มีวันย้าย → รอกำหนดวันย้าย · เลยวันย้าย → ย้ายแล้ว · เหลือ ≤ 7 วัน → ใกล้ย้าย · นอกนั้น → ปกติ</li>
+        <li><b>แผนเก็บตัวอย่าง</b> ย้อนหลังจากวันย้าย: 17 วัน (TITER + PCR), 10 วัน (TITER + PCR), 3 วัน (PCR) — วันที่ถึงกำหนดภายใน 7 วัน <span class="pill due">ไฮไลต์เหลือง</span> ที่เลยแล้ว <span class="pill past">สีเทา</span></li>
+        <li><b>ตรวจสอบ</b>: ยังไม่กรอกวันเริ่มเลี้ยง / วันเริ่มเลี้ยงในอนาคต / ยังไม่กรอกจำนวนไก่ / โรงเรือนซ้ำ / อายุ ≥ 91 วันแต่ยังไม่กำหนดวันย้าย / วันย้ายก่อนวันเริ่มเลี้ยง / ย้ายก่อนครบ 105 วัน / อายุวันย้ายเกิน 125 วัน</li>
+      </ul>
+    </details>
+  </main>
+
+  <!-- ฟอร์มเพิ่ม / แก้ไข -->
+  <dialog id="editDlg" class="dlg">
+    <form method="dialog" id="editForm" novalidate>
+      <header class="dlg-head">
+        <h3 id="editTitle">เพิ่มฝูง</h3>
+        <button type="button" class="x" data-close aria-label="ปิด">×</button>
+      </header>
+      <div class="form-grid">
+        <label>กลุ่ม / แผ่นงาน<input name="group" list="dlGroups" required placeholder="เช่น KBP"></label>
+        <label>ฟาร์ม / โครงการ<input name="farm" list="dlFarms" required></label>
+        <label>Vendor<input name="vendor" inputmode="numeric"></label>
+        <label>โรงเรือน<input name="house" required placeholder="เช่น H01"></label>
+        <label>รุ่น<input name="batch"></label>
+        <label>จำนวนไก่ (ตัว)<input name="count" type="number" min="0" step="1" inputmode="numeric"></label>
+        <label>วันเริ่มเลี้ยง<input name="start" type="date"></label>
+        <label>วันย้าย<input name="move" type="date"></label>
+      </div>
+      <div class="preview" id="preview" aria-live="polite"></div>
+      <footer class="dlg-foot">
+        <button type="button" class="btn danger ghost" id="delBtn">ลบฝูงนี้</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>ยกเลิก</button>
+        <button type="submit" class="btn primary" id="saveBtn">บันทึก</button>
+      </footer>
+      <datalist id="dlGroups"></datalist>
+      <datalist id="dlFarms"></datalist>
+    </form>
+  </dialog>
+
+  <!-- ตั้งค่า GitHub -->
+  <dialog id="ghDlg" class="dlg narrow">
+    <form method="dialog" id="ghForm">
+      <header class="dlg-head">
+        <h3>บันทึกข้อมูลขึ้น GitHub</h3>
+        <button type="button" class="x" data-close aria-label="ปิด">×</button>
+      </header>
+      <p class="muted small">
+        ทุกครั้งที่เพิ่ม/แก้ไข/ลบ แอปจะ commit ไฟล์ข้อมูลขึ้น repository ให้อัตโนมัติ ทุกคนที่เปิดเว็บจะเห็นข้อมูลชุดเดียวกัน
+        ใช้ <b>Fine-grained token</b> ที่ให้สิทธิ์ <i>Contents: Read and write</i> เฉพาะ repo นี้ (Token เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น)
+      </p>
+      <div class="form-grid">
+        <label>Owner<input name="owner" required placeholder="PichaPi"></label>
+        <label>Repository<input name="repo" required placeholder="pullet-age-tracker"></label>
+        <label>Branch<input name="branch" value="main"></label>
+        <label>ไฟล์ข้อมูล<input name="path" value="data/flocks.json"></label>
+        <label class="full">Token<input name="token" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+      </div>
+      <footer class="dlg-foot">
+        <button type="button" class="btn danger ghost" id="ghClear">ล้างการตั้งค่า</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>ยกเลิก</button>
+        <button type="submit" class="btn primary">เชื่อมต่อ</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="js/calc.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

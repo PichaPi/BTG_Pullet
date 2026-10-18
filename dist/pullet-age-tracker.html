@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pullet Age Tracker</title>
+  <meta name="description" content="ตารางติดตามอายุไก่สาว — วันย้าย และแผนเก็บตัวอย่าง TITER / PCR">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='18' rx='10' ry='12' fill='%23E8A33D'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg: #f6f4ef;
+  --surface: #ffffff;
+  --surface-2: #faf8f3;
+  --line: #e6e1d6;
+  --line-strong: #d4cdbd;
+  --text: #1f2a24;
+  --muted: #6c7670;
+  --primary: #24563f;
+  --primary-ink: #ffffff;
+  --accent: #e8a33d;
+
+  --ok-bg: #e3f3e8;    --ok-fg: #2d6a4f;
+  --soon-bg: #ffe0e0;  --soon-fg: #c0392b;
+  --wait-bg: #fff3c4;  --wait-fg: #8a6d00;
+  --moved-bg: #e4e7e5; --moved-fg: #7a857e;
+  --due-bg: #ffe97f;   --due-fg: #6b4f00;
+  --past-fg: #a9b3ac;
+  --age-ok: #1b7f3b;
+  --issue-bg: #ffe0e0; --issue-fg: #a5281b;
+
+  --band-info: #eef2ee;
+  --band-age: #eef4f8;
+  --band-move: #fdf3e2;
+  --band-s: #f4f0f8;
+  --shadow: 0 1px 2px rgba(31, 42, 36, .06), 0 4px 16px rgba(31, 42, 36, .05);
+  --radius: 12px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131815; --surface: #1b211d; --surface-2: #20271f; --line: #2c342f; --line-strong: #3a443d;
+    --text: #e8ece9; --muted: #98a39c; --primary: #5fb88a; --primary-ink: #0f1a14; --accent: #f0b65a;
+    --ok-bg: #1d3a2a; --ok-fg: #8fdcae; --soon-bg: #4a2220; --soon-fg: #ff9a8e;
+    --wait-bg: #3e3514; --wait-fg: #f2d36b; --moved-bg: #2a302c; --moved-fg: #8d978f;
+    --due-bg: #5a4a10; --due-fg: #ffe58a; --past-fg: #5f6a63; --age-ok: #6fd394;
+    --issue-bg: #4a2220; --issue-fg: #ffab9f;
+    --band-info: #1f2722; --band-age: #1c2429; --band-move: #2a2418; --band-s: #241f2a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131815; --surface: #1b211d; --surface-2: #20271f; --line: #2c342f; --line-strong: #3a443d;
+  --text: #e8ece9; --muted: #98a39c; --primary: #5fb88a; --primary-ink: #0f1a14; --accent: #f0b65a;
+  --ok-bg: #1d3a2a; --ok-fg: #8fdcae; --soon-bg: #4a2220; --soon-fg: #ff9a8e;
+  --wait-bg: #3e3514; --wait-fg: #f2d36b; --moved-bg: #2a302c; --moved-fg: #8d978f;
+  --due-bg: #5a4a10; --due-fg: #ffe58a; --past-fg: #5f6a63; --age-ok: #6fd394;
+  --issue-bg: #4a2220; --issue-fg: #ffab9f;
+  --band-info: #1f2722; --band-age: #1c2429; --band-move: #2a2418; --band-s: #241f2a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 "IBM Plex Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+button, input { font: inherit; color: inherit; }
+h1, h2, h3 { margin: 0; line-height: 1.25; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; font-weight: 400; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 24px; background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { width: 26px; height: 32px; border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%; background: var(--accent); box-shadow: inset -4px -5px 0 rgba(0, 0, 0, .08); }
+.brand h1 { font-size: 18px; font-weight: 700; }
+.brand .sub { margin: 0; font-size: 13px; color: var(--muted); }
+.top-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.refdate { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.refdate input { padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); }
+
+.btn { border: 1px solid transparent; border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn.primary { background: var(--primary); color: var(--primary-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; border-color: var(--line-strong); }
+.btn.ghost:hover { background: var(--surface-2); }
+.btn.danger { color: var(--soon-fg); border-color: color-mix(in srgb, var(--soon-fg) 40%, transparent); }
+.link-btn { border: 0; background: none; padding: 0; color: var(--primary); text-decoration: underline; cursor: pointer; font-size: inherit; }
+
+.sync-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--muted); cursor: pointer; }
+.sync-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wait-fg); }
+.sync-chip[data-state="synced"] .dot { background: var(--ok-fg); }
+.sync-chip[data-state="saving"] .dot { background: var(--accent); animation: pulse 1s infinite; }
+.sync-chip[data-state="error"] .dot { background: var(--soon-fg); }
+@keyframes pulse { 50% { opacity: .3; } }
+
+.menu-wrap { position: relative; }
+.menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 250px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); z-index: 30; }
+.menu button { display: block; width: 100%; text-align: left; padding: 8px 10px; border: 0; background: none; border-radius: 6px; cursor: pointer; }
+.menu button:hover { background: var(--surface-2); }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+
+/* ---------- layout ---------- */
+main { max-width: 1480px; margin: 0 auto; padding: 20px 24px 60px; display: grid; gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; min-width: 0; }
+.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.panel-head.wrap { flex-wrap: wrap; align-items: center; }
+.panel-head h2 { font-size: 16px; font-weight: 600; }
+.banner { padding: 10px 14px; border-radius: 10px; background: var(--wait-bg); color: var(--wait-fg); font-size: 14px; }
+
+/* ---------- KPIs ---------- */
+.kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+.kpi { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+button.kpi { cursor: pointer; }
+.k-label { font-size: 13px; color: var(--muted); }
+.k-value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.k-note { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kpi.soon .k-value { color: var(--soon-fg); }
+.kpi.due { border-color: color-mix(in srgb, var(--due-fg) 30%, var(--line)); }
+.kpi.due .k-value { color: var(--due-fg); }
+.kpi.issue .k-value { color: var(--issue-fg); }
+
+/* ---------- due list ---------- */
+.due-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 8px; }
+.due-list li { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
+.due-what { min-width: 0; }
+.due-what b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.due-list li:hover { border-color: var(--line-strong); }
+.due-list li.none { grid-template-columns: 1fr; color: var(--muted); cursor: default; }
+.due-list small { display: block; font-size: 12px; color: var(--muted); }
+.due-date b { font-size: 15px; }
+.due-what b { font-weight: 600; }
+.due-test { text-align: right; }
+
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.test { background: var(--due-bg); color: var(--due-fg); }
+.pill.due { background: var(--due-bg); color: var(--due-fg); }
+.pill.past { background: var(--moved-bg); color: var(--past-fg); }
+
+/* ---------- filters ---------- */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.seg { display: inline-flex; padding: 3px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; max-width: 100%; overflow-x: auto; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap; font-size: 14px; color: var(--muted); }
+.seg button span { font-size: 12px; opacity: .7; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+.filters input[type="search"] { padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); min-width: 220px; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; }
+
+/* ---------- table ---------- */
+.table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; max-height: calc(100vh - 160px); }
+.grid { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+.grid th, .grid td { padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; text-align: left; }
+.grid thead th { position: sticky; z-index: 3; background: var(--surface); font-weight: 600; font-size: 12.5px; color: var(--muted); }
+.grid thead tr.band th { top: 0; height: 44px; color: var(--text); font-size: 13px; text-align: center; border-left: 1px solid var(--line); line-height: 1.2; }
+.grid thead tr.band th small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.grid thead tr:nth-child(2) th { top: 44px; }
+.b-info { background: var(--band-info) !important; }
+.b-age { background: var(--band-age) !important; }
+.b-move { background: var(--band-move) !important; }
+.b-s { background: var(--band-s) !important; }
+.b-chk { background: var(--surface-2) !important; }
+.grid .num { text-align: right; }
+.grid .sticky { position: sticky; left: 0; z-index: 2; background: var(--surface); border-right: 1px solid var(--line); }
+.grid thead .sticky { z-index: 4; }
+.grid tbody tr { cursor: pointer; }
+.grid tbody tr:hover td { background: var(--surface-2); }
+.grid td.farm b { display: block; font-weight: 600; }
+.grid td.farm span { font-size: 12.5px; color: var(--muted); }
+.grid td.farm em { font-style: normal; font-weight: 600; color: var(--primary); }
+.grid th.sh { line-height: 1.2; }
+.grid th.sh small, .grid td.s-date small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+.grid td.s-date.due small { color: var(--due-fg); }
+.grid td.s-date.past small { color: var(--past-fg); }
+.grid td.move b { font-weight: 600; }
+.grid td.left { font-weight: 600; }
+.grid tr.r-soon td.left { color: var(--soon-fg); }
+.grid tr.r-moved td { color: var(--moved-fg); }
+.grid tr.r-moved td.farm b { font-weight: 500; }
+.grid tr.sep td { background: var(--surface-2); color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 6px 12px; cursor: default; }
+.grid tr.sep span { position: sticky; left: 12px; }
+.grid tfoot td { font-weight: 600; background: var(--surface-2); border-bottom: 0; position: sticky; bottom: 0; }
+.age-ok { color: var(--age-ok) !important; font-weight: 600; }
+.s-age { color: var(--muted); }
+.s-date.due { background: var(--due-bg) !important; color: var(--due-fg) !important; font-weight: 600; }
+.s-date.past { color: var(--past-fg) !important; }
+td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--issue-bg); color: var(--issue-fg); font-size: 12.5px; }
+
+.status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.status.ok { background: var(--ok-bg); color: var(--ok-fg); }
+.status.soon { background: var(--soon-bg); color: var(--soon-fg); }
+.status.wait { background: var(--wait-bg); color: var(--wait-fg); }
+.status.moved { background: var(--moved-bg); color: var(--moved-fg); }
+
+/* ---------- cards (mobile) ---------- */
+.cards { display: none; gap: 10px; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface); cursor: pointer; border-left: 4px solid var(--line-strong); }
+.card.r-ok { border-left-color: var(--ok-fg); }
+.card.r-soon { border-left-color: var(--soon-fg); }
+.card.r-wait { border-left-color: var(--wait-fg); }
+.card.r-moved { border-left-color: var(--moved-fg); opacity: .8; }
+.card header { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.card header b { font-size: 15.5px; }
+.card .house { font-weight: 600; color: var(--primary); }
+.card header small { display: block; color: var(--muted); font-size: 12.5px; }
+.card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin: 10px 0 0; }
+.card dt { font-size: 12px; color: var(--muted); }
+.card dd { margin: 0; }
+.card dd small { display: block; font-size: 12px; color: var(--muted); }
+.samples { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.samples li { padding: 6px 8px; border-radius: 8px; background: var(--surface-2); font-size: 13px; }
+.samples li span { display: block; font-size: 11.5px; color: var(--muted); }
+.samples li small { display: block; font-size: 11px; color: var(--muted); }
+.samples li.due { background: var(--due-bg); color: var(--due-fg); }
+.samples li.due span, .samples li.due small { color: var(--due-fg); }
+.samples li.past { color: var(--past-fg); }
+.issue-line { margin: 10px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--issue-bg); color: var(--issue-fg); font-size: 13px; }
+.empty { text-align: center; color: var(--muted); padding: 24px; margin: 0; }
+
+/* ---------- notes ---------- */
+.notes summary { cursor: pointer; font-weight: 600; }
+.notes ul { margin: 12px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+.notes b { color: var(--text); font-weight: 600; }
+
+/* ---------- dialogs ---------- */
+.dlg { border: 0; padding: 0; border-radius: 16px; width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 32px); background: var(--surface); color: var(--text); box-shadow: 0 20px 60px rgba(0, 0, 0, .25); }
+.dlg.narrow { width: min(520px, calc(100vw - 32px)); }
+.dlg::backdrop { background: rgba(15, 20, 17, .45); }
+.dlg form { padding: 18px 20px; }
+.dlg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.dlg-head h3 { font-size: 18px; }
+.x { border: 0; background: none; font-size: 24px; line-height: 1; cursor: pointer; color: var(--muted); padding: 4px 8px; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.form-grid label.full { grid-column: 1 / -1; }
+.form-grid input { padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 15px; width: 100%; }
+.form-grid input:focus, .refdate input:focus, .filters input:focus { outline: 2px solid color-mix(in srgb, var(--primary) 45%, transparent); outline-offset: 1px; }
+.form-grid input.invalid { border-color: var(--soon-fg); background: var(--soon-bg); }
+.preview { margin-top: 16px; padding: 12px; border-radius: 10px; background: var(--surface-2); border: 1px dashed var(--line-strong); }
+.pv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; }
+.pv-grid div { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.pv-grid b { font-size: 14.5px; color: var(--text); font-weight: 600; }
+.pv-grid small { font-weight: 400; color: var(--muted); }
+.pv-grid .age-ok b { color: var(--age-ok); }
+.pv-grid .s-date.due { background: var(--due-bg); }
+.pv-grid .s-date.due b { color: var(--due-fg); }
+.pv-grid .s-date.past b { color: var(--past-fg); }
+.dlg-foot { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
+.spacer { flex: 1; }
+
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 10px; background: var(--text); color: var(--bg); font-size: 14px; box-shadow: var(--shadow); z-index: 50; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+  .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .topbar { padding: 10px 16px; position: static; }
+  main { padding: 16px 16px 48px; gap: 12px; }
+  .top-actions { width: 100%; }
+  .refdate { flex: 1 1 100%; }
+  .refdate input { flex: 1; }
+  #addBtn { margin-left: auto; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .k-value { font-size: 22px; }
+  .table-wrap { display: none; }
+  .cards { display: grid; }
+  .filters { width: 100%; }
+  .filters input[type="search"] { flex: 1 1 100%; min-width: 0; }
+  .due-list { grid-template-columns: 1fr; }
+  .due-list li { grid-template-columns: minmax(0, 1fr) auto; }
+  .due-list .due-what { grid-column: 1 / -1; grid-row: 2; }
+  .due-list .pill { grid-column: 2; grid-row: 1; justify-self: end; }
+  .form-grid, .pv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dlg form { padding: 16px; }
+}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>ตารางติดตามอายุไก่สาว</h1>
+        <p class="sub">วันย้าย · แผนเก็บตัวอย่าง TITER / PCR</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <label class="refdate" title="วันที่ใช้คำนวณอายุ (ค่าเริ่มต้น = วันนี้)">
+        <span>วันที่อ้างอิง</span>
+        <input type="date" id="refDate">
+        <button type="button" class="link-btn" id="refToday" hidden>กลับเป็นวันนี้</button>
+      </label>
+      <button type="button" class="sync-chip" id="syncChip" data-state="local">
+        <span class="dot"></span><span id="syncText">บันทึกในเครื่องนี้</span>
+      </button>
+      <div class="menu-wrap">
+        <button type="button" class="btn ghost" id="menuBtn" aria-haspopup="true" aria-expanded="false">เพิ่มเติม ▾</button>
+        <div class="menu" id="menu" hidden>
+          <button type="button" data-act="xlsx">ส่งออก Excel (.xlsx พร้อมสูตร)</button>
+          <button type="button" data-act="json">ส่งออกข้อมูล (.json)</button>
+          <button type="button" data-act="import">นำเข้าข้อมูล (.json)</button>
+          <hr>
+          <button type="button" data-act="github">ตั้งค่าบันทึกขึ้น GitHub</button>
+          <button type="button" data-act="reload">โหลดข้อมูลล่าสุด</button>
+        </div>
+      </div>
+      <button type="button" class="btn primary" id="addBtn">+ เพิ่มฝูง</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="banner" id="banner" hidden></div>
+
+    <section class="kpis" id="kpis" aria-label="สรุป"></section>
+
+    <section class="panel" id="duePanel" aria-labelledby="dueTitle">
+      <div class="panel-head">
+        <h2 id="dueTitle">งานเก็บตัวอย่าง 7 วันข้างหน้า</h2>
+        <span class="muted" id="dueRange"></span>
+      </div>
+      <ul class="due-list" id="dueList"></ul>
+    </section>
+
+    <section class="panel" aria-labelledby="listTitle">
+      <div class="panel-head wrap">
+        <h2 id="listTitle">ฝูงไก่สาว <span class="muted small">เรียงตามวันย้ายที่ใกล้ที่สุด</span></h2>
+        <div class="filters">
+          <div class="seg" id="groupSeg" role="tablist"></div>
+          <input type="search" id="search" placeholder="ค้นหาฟาร์ม / โรงเรือน / Vendor">
+          <label class="check"><input type="checkbox" id="showMoved" checked> แสดงที่ย้ายแล้ว</label>
+          <label class="check"><input type="checkbox" id="onlyIssue"> เฉพาะข้อมูลผิดปกติ</label>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="grid" id="grid">
+          <thead>
+            <tr class="band">
+              <th colspan="5" class="b-info">ข้อมูลฝูงไก่สาว</th>
+              <th colspan="3" class="b-age">อายุปัจจุบัน</th>
+              <th colspan="4" class="b-move">แผนย้าย / จับ</th>
+              <th colspan="3" class="b-s">วันเก็บตัวอย่าง (ย้อนจากวันย้าย)</th>
+              <th class="b-chk">ตรวจสอบ</th>
+            </tr>
+            <tr>
+              <th class="sticky">ฟาร์ม / โรงเรือน</th>
+              <th>Vendor</th>
+              <th>รุ่น</th>
+              <th class="num">จำนวนไก่</th>
+              <th>วันเริ่มเลี้ยง</th>
+              <th class="num">อายุ (วัน)</th>
+              <th class="num">สัปดาห์-วัน</th>
+              <th>ครบ 105 วัน</th>
+              <th>วันย้าย</th>
+              <th class="num">อายุวันย้าย</th>
+              <th class="num">เหลือ (วัน)</th>
+              <th>สถานะ</th>
+              <th class="sh">ก่อนจับ 17 วัน<small>TITER + PCR</small></th>
+              <th class="sh">ก่อนจับ 10 วัน<small>TITER + PCR</small></th>
+              <th class="sh">ก่อนจับ 3 วัน<small>PCR</small></th>
+              <th>ข้อมูลผิดปกติ</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+          <tfoot id="gridFoot"></tfoot>
+        </table>
+      </div>
+      <div class="cards" id="cards"></div>
+      <p class="empty" id="empty" hidden>ไม่พบฝูงตามเงื่อนไขที่เลือก</p>
+    </section>
+
+    <details class="panel notes">
+      <summary>วิธีคำนวณ (เหมือนไฟล์ Excel เดิม)</summary>
+      <ul>
+        <li><b>อายุ (วัน)</b> = วันที่อ้างอิง − วันเริ่มเลี้ยง · <b>สัปดาห์-วัน</b> เช่น 18-6 = 18 สัปดาห์ 6 วัน (ตัวเลขสีเขียวเมื่ออายุ ≥ 105 วัน)</li>
+        <li><b>ครบ 105 วัน</b> = วันเริ่มเลี้ยง + 105 วัน · <b>อายุวันย้าย</b> = วันย้าย − วันเริ่มเลี้ยง · <b>เหลืออีก</b> = วันย้าย − วันที่อ้างอิง</li>
+        <li><b>สถานะ</b>: ไม่มีวันย้าย → รอกำหนดวันย้าย · เลยวันย้าย → ย้ายแล้ว · เหลือ ≤ 7 วัน → ใกล้ย้าย · นอกนั้น → ปกติ</li>
+        <li><b>แผนเก็บตัวอย่าง</b> ย้อนหลังจากวันย้าย: 17 วัน (TITER + PCR), 10 วัน (TITER + PCR), 3 วัน (PCR) — วันที่ถึงกำหนดภายใน 7 วัน <span class="pill due">ไฮไลต์เหลือง</span> ที่เลยแล้ว <span class="pill past">สีเทา</span></li>
+        <li><b>ตรวจสอบ</b>: ยังไม่กรอกวันเริ่มเลี้ยง / วันเริ่มเลี้ยงในอนาคต / ยังไม่กรอกจำนวนไก่ / โรงเรือนซ้ำ / อายุ ≥ 91 วันแต่ยังไม่กำหนดวันย้าย / วันย้ายก่อนวันเริ่มเลี้ยง / ย้ายก่อนครบ 105 วัน / อายุวันย้ายเกิน 125 วัน</li>
+      </ul>
+    </details>
+  </main>
+
+  <!-- ฟอร์มเพิ่ม / แก้ไข -->
+  <dialog id="editDlg" class="dlg">
+    <form method="dialog" id="editForm" novalidate>
+      <header class="dlg-head">
+        <h3 id="editTitle">เพิ่มฝูง</h3>
+        <button type="button" class="x" data-close aria-label="ปิด">×</button>
+      </header>
+      <div class="form-grid">
+        <label>กลุ่ม / แผ่นงาน<input name="group" list="dlGroups" required placeholder="เช่น KBP"></label>
+        <label>ฟาร์ม / โครงการ<input name="farm" list="dlFarms" required></label>
+        <label>Vendor<input name="vendor" inputmode="numeric"></label>
+        <label>โรงเรือน<input name="house" required placeholder="เช่น H01"></label>
+        <label>รุ่น<input name="batch"></label>
+        <label>จำนวนไก่ (ตัว)<input name="count" type="number" min="0" step="1" inputmode="numeric"></label>
+        <label>วันเริ่มเลี้ยง<input name="start" type="date"></label>
+        <label>วันย้าย<input name="move" type="date"></label>
+      </div>
+      <div class="preview" id="preview" aria-live="polite"></div>
+      <footer class="dlg-foot">
+        <button type="button" class="btn danger ghost" id="delBtn">ลบฝูงนี้</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>ยกเลิก</button>
+        <button type="submit" class="btn primary" id="saveBtn">บันทึก</button>
+      </footer>
+      <datalist id="dlGroups"></datalist>
+      <datalist id="dlFarms"></datalist>
+    </form>
+  </dialog>
+
+  <!-- ตั้งค่า GitHub -->
+  <dialog id="ghDlg" class="dlg narrow">
+    <form method="dialog" id="ghForm">
+      <header class="dlg-head">
+        <h3>บันทึกข้อมูลขึ้น GitHub</h3>
+        <button type="button" class="x" data-close aria-label="ปิด">×</button>
+      </header>
+      <p class="muted small">
+        ทุกครั้งที่เพิ่ม/แก้ไข/ลบ แอปจะ commit ไฟล์ข้อมูลขึ้น repository ให้อัตโนมัติ ทุกคนที่เปิดเว็บจะเห็นข้อมูลชุดเดียวกัน
+        ใช้ <b>Fine-grained token</b> ที่ให้สิทธิ์ <i>Contents: Read and write</i> เฉพาะ repo นี้ (Token เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น)
+      </p>
+      <div class="form-grid">
+        <label>Owner<input name="owner" required placeholder="PichaPi"></label>
+        <label>Repository<input name="repo" required placeholder="pullet-age-tracker"></label>
+        <label>Branch<input name="branch" value="main"></label>
+        <label>ไฟล์ข้อมูล<input name="path" value="data/flocks.json"></label>
+        <label class="full">Token<input name="token" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+      </div>
+      <footer class="dlg-foot">
+        <button type="button" class="btn danger ghost" id="ghClear">ล้างการตั้งค่า</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" data-close>ยกเลิก</button>
+        <button type="submit" class="btn primary">เชื่อมต่อ</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script>
+/*
+ * calc.js — สูตรคำนวณทั้งหมด ยกมาจากไฟล์ Pullet_Age.xlsx แบบ 1:1
+ *
+ *   อายุ (วัน)          G = วันอ้างอิง − วันเริ่มเลี้ยง                      =IF($F6="","",$E$2-$F6)
+ *   อายุ (สัปดาห์-วัน)   H = INT(G/7) & "-" & MOD(G,7)                       =IF($F6="","",INT($G6/7)&"-"&MOD($G6,7))
+ *   ครบ 105 วัน          I = วันเริ่มเลี้ยง + 105                              =IF($F6="","",$F6+105)
+ *   อายุวันย้าย          K = วันย้าย − วันเริ่มเลี้ยง                          =IF(OR($F6="",$J6=""),"",$J6-$F6)
+ *   เหลืออีก (วัน)       L = วันย้าย − วันอ้างอิง                             =IF($J6="","",$J6-$E$2)
+ *   สถานะ               M = รอกำหนดวันย้าย / ย้ายแล้ว / ใกล้ย้าย (≤7 วัน) / ปกติ
+ *   ก่อนจับ 17/10/3 วัน  อายุ = K − n , วันที่เก็บ = J − n
+ *   ตรวจสอบ (ข้อมูลผิดปกติ) ตามสูตรคอลัมน์ S ของแผ่น "ไก่สาวโครงการ"
+ */
+(function (root) {
+  'use strict';
+
+  var DAY = 86400000;
+  var SAMPLE_PLAN = [
+    { days: 17, test: 'TITER + PCR' },
+    { days: 10, test: 'TITER + PCR' },
+    { days: 3, test: 'PCR' }
+  ];
+  var AGE_TARGET = 105;       // ครบ 105 วัน
+  var MOVE_SOON_DAYS = 7;     // ใกล้ย้าย เมื่อเหลือ ≤ 7 วัน
+  var SAMPLE_WINDOW = 7;      // ไฮไลต์วันเก็บตัวอย่างที่ถึงกำหนดภายใน 7 วัน
+  var NO_MOVE_WARN_AGE = 91;  // อายุ ≥ 91 วัน แต่ยังไม่กำหนดวันย้าย
+  var MOVE_AGE_MAX = 125;     // อายุวันย้ายเกิน 125 วัน
+
+  /* วันที่เก็บเป็นสตริง 'YYYY-MM-DD' และคำนวณเป็น "เลขวัน" (เหมือน serial ของ Excel) เพื่อไม่ให้ timezone มายุ่ง */
+  function toDay(s) {
+    if (!s) return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s));
+    if (!m) return null;
+    return Math.round(Date.UTC(+m[1], +m[2] - 1, +m[3]) / DAY);
+  }
+  function fromDay(n) {
+    if (n === null || n === undefined) return '';
+    return new Date(n * DAY).toISOString().slice(0, 10);
+  }
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function isBlank(v) { return v === null || v === undefined || String(v).trim() === ''; }
+  /* MOD ของ Excel ให้ผลเครื่องหมายตามตัวหาร (7 → ไม่ติดลบเสมอ) */
+  function excelMod(a, b) { return ((a % b) + b) % b; }
+
+  function compute(f, refISO, all) {
+    var ref = toDay(refISO);
+    var start = toDay(f.start);
+    var move = toDay(f.move);
+    var r = {
+      age: null, ageWD: '', d105: null, moveAge: null, left: null,
+      status: '', samples: [], issue: ''
+    };
+
+    if (start !== null) {
+      r.age = ref - start;
+      r.ageWD = Math.floor(r.age / 7) + '-' + excelMod(r.age, 7);
+      r.d105 = start + AGE_TARGET;
+    }
+    if (start !== null && move !== null) r.moveAge = move - start;
+    if (move !== null) r.left = move - ref;
+
+    // สถานะ (สูตรคอลัมน์ M แผ่น KBP)
+    if (start !== null) {
+      if (move === null) r.status = 'รอกำหนดวันย้าย';
+      else if (ref > move) r.status = 'ย้ายแล้ว';
+      else if (move - ref <= MOVE_SOON_DAYS) r.status = 'ใกล้ย้าย';
+      else r.status = 'ปกติ';
+    }
+
+    // แผนเก็บตัวอย่างย้อนหลังจากวันย้าย
+    r.samples = SAMPLE_PLAN.map(function (p) {
+      var date = move === null ? null : move - p.days;
+      var state = '';
+      if (date !== null) {
+        if (date < ref) state = 'past';
+        else if (date <= ref + SAMPLE_WINDOW) state = 'due';
+      }
+      return {
+        days: p.days, test: p.test,
+        age: r.moveAge === null ? null : r.moveAge - p.days,
+        date: date, state: state
+      };
+    });
+
+    r.issue = checkIssue(f, r, ref, start, move, all);
+    return r;
+  }
+
+  // สูตรคอลัมน์ "ข้อมูลผิดปกติ" (ไก่สาวโครงการ!S6) — ลำดับเงื่อนไขเหมือนเดิม
+  function checkIssue(f, r, ref, start, move, all) {
+    if (isBlank(f.farm) || isBlank(f.house)) return '';
+    if (isBlank(f.start)) return 'ยังไม่กรอกวันเริ่มเลี้ยง';
+    if (start === null) return 'วันเริ่มเลี้ยงไม่ใช่วันที่';
+    if (start > ref) return 'วันเริ่มเลี้ยงเป็นวันในอนาคต';
+    if (isBlank(f.count)) return 'ยังไม่กรอกจำนวนไก่';
+    if (all) {
+      var dup = all.filter(function (o) {
+        return o.group === f.group &&
+          String(o.farm).trim() === String(f.farm).trim() &&
+          String(o.house).trim() === String(f.house).trim();
+      }).length;
+      if (dup > 1) return 'โรงเรือนซ้ำ';
+    }
+    if (isBlank(f.move)) return r.age >= NO_MOVE_WARN_AGE ? 'อายุ ≥91 วัน แต่ยังไม่กำหนดวันย้าย' : '';
+    if (move === null) return 'วันย้ายไม่ใช่วันที่';
+    if (move <= start) return 'วันย้ายอยู่ก่อนวันเริ่มเลี้ยง';
+    if (r.moveAge < AGE_TARGET) return 'ย้ายก่อนครบ 105 วัน';
+    if (r.moveAge > MOVE_AGE_MAX) return 'อายุวันย้ายเกิน 125 วัน';
+    return '';
+  }
+
+  /*
+   * ลำดับการแสดงผล: วันย้ายใกล้วันนี้ที่สุดขึ้นก่อน
+   *   1) ฝูงที่ยังไม่ย้าย — เรียงวันย้ายจากใกล้ → ไกล
+   *   2) ฝูงที่ยังไม่กำหนดวันย้าย
+   *   3) ฝูงที่ย้ายแล้ว — ย้ายล่าสุดขึ้นก่อน
+   */
+  function sortRank(f, refISO) {
+    var ref = toDay(refISO), move = toDay(f.move);
+    if (move === null) return [1, 0];
+    if (move >= ref) return [0, move - ref];
+    return [2, ref - move];
+  }
+  function sortFlocks(list, refISO) {
+    return list.slice().sort(function (a, b) {
+      var ra = sortRank(a, refISO), rb = sortRank(b, refISO);
+      if (ra[0] !== rb[0]) return ra[0] - rb[0];
+      if (ra[1] !== rb[1]) return ra[1] - rb[1];
+      return (String(a.farm) + a.house).localeCompare(String(b.farm) + b.house, 'th');
+    });
+  }
+
+  var api = {
+    SAMPLE_PLAN: SAMPLE_PLAN, AGE_TARGET: AGE_TARGET, SAMPLE_WINDOW: SAMPLE_WINDOW,
+    toDay: toDay, fromDay: fromDay, todayISO: todayISO,
+    compute: compute, sortFlocks: sortFlocks
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.PulletCalc = api;
+})(this);
+</script>
+  <script>
+/*
+ * store.js — โหลด/บันทึกข้อมูล
+ *   - ไม่มีการตั้งค่า GitHub: อ่าน data/flocks.json แล้วเก็บการแก้ไขไว้ใน localStorage ของเครื่องนั้น
+ *   - ตั้งค่า GitHub แล้ว: อ่าน/เขียน data/flocks.json ใน repo ผ่าน GitHub API (commit ทุกครั้งที่บันทึก)
+ */
+(function (root) {
+  'use strict';
+
+  var LS_DATA = 'pullet.data.v1';
+  var LS_GH = 'pullet.github.v1';
+
+  function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+
+  function b64encode(str) {
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function b64decode(b64) {
+    var bin = atob(String(b64).replace(/\s/g, ''));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  /* เดา owner/repo จาก URL ของ GitHub Pages: https://<owner>.github.io/<repo>/ */
+  function guessRepo() {
+    var m = /^([^.]+)\.github\.io$/i.exec(location.hostname);
+    if (!m) return {};
+    var repo = location.pathname.split('/').filter(Boolean)[0] || (m[1] + '.github.io');
+    return { owner: m[1], repo: repo };
+  }
+
+  var gh = lsGet(LS_GH);
+  var sha = null;          // sha ของไฟล์บน GitHub (ใช้ตอน commit)
+
+  function ghConfig() {
+    var g = guessRepo();
+    return Object.assign({ owner: g.owner || '', repo: g.repo || '', branch: 'main', path: 'data/flocks.json', token: '' }, gh || {});
+  }
+  function ghEnabled() { return !!(gh && gh.token && gh.owner && gh.repo); }
+  function ghUrl(c) {
+    return 'https://api.github.com/repos/' + encodeURIComponent(c.owner) + '/' + encodeURIComponent(c.repo) +
+      '/contents/' + c.path.split('/').map(encodeURIComponent).join('/');
+  }
+  function ghHeaders(c) {
+    return { 'Authorization': 'Bearer ' + c.token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+  }
+
+  async function ghRead(c) {
+    var res = await fetch(ghUrl(c) + '?ref=' + encodeURIComponent(c.branch) + '&t=' + Date.now(), { headers: ghHeaders(c), cache: 'no-store' });
+    if (res.status === 404) { sha = null; return null; }
+    if (!res.ok) throw new Error('GitHub ' + res.status + ': ' + (await res.text()).slice(0, 200));
+    var j = await res.json();
+    sha = j.sha;
+    return JSON.parse(b64decode(j.content));
+  }
+
+  async function ghWrite(c, data, message) {
+    var body = { message: message, content: b64encode(JSON.stringify(data, null, 2) + '\n'), branch: c.branch };
+    if (sha) body.sha = sha;
+    var res = await fetch(ghUrl(c), { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, ghHeaders(c)), body: JSON.stringify(body) });
+    if (res.status === 409 || res.status === 422) {
+      var e = new Error('conflict'); e.conflict = true; throw e;
+    }
+    if (!res.ok) throw new Error('GitHub ' + res.status + ': ' + (await res.text()).slice(0, 200));
+    var j = await res.json();
+    sha = j.content && j.content.sha;
+  }
+
+  async function fetchSeed() {
+    var res = await fetch('data/flocks.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('โหลด data/flocks.json ไม่ได้ (' + res.status + ')');
+    return res.json();
+  }
+
+  function normalize(d) {
+    if (Array.isArray(d)) d = { flocks: d };
+    d = d || {};
+    d.version = 1;
+    d.flocks = (d.flocks || []).map(function (f, i) {
+      return {
+        id: f.id || ('f' + Date.now().toString(36) + i),
+        group: String(f.group || '').trim(), farm: String(f.farm || '').trim(),
+        vendor: String(f.vendor == null ? '' : f.vendor).trim(), house: String(f.house || '').trim(),
+        batch: String(f.batch == null ? '' : f.batch).trim(),
+        count: f.count === '' || f.count == null ? null : Number(f.count),
+        start: f.start || '', move: f.move || ''
+      };
+    });
+    return d;
+  }
+
+  /* ---------- Claude Artifact db (ใช้เมื่อเปิดแอปเป็น Artifact บน claude.ai) ---------- */
+  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move'];
+  var dbPromise = null, db = null, dbUnsub = null, dbLast = {}, remoteCb = null;
+
+  function getDb() {
+    if (!dbPromise) {
+      dbPromise = (root.claude && typeof root.claude.use === 'function')
+        ? root.claude.use('db').catch(function () { return null; })
+        : Promise.resolve(null);
+    }
+    return dbPromise;
+  }
+  function pick(f) { var o = {}; FIELDS.forEach(function (k) { o[k] = f[k] == null ? null : f[k]; }); return o; }
+  function same(a, b) { return JSON.stringify(pick(a)) === JSON.stringify(pick(b)); }
+
+  function dbLoad() {
+    return new Promise(function (resolve, reject) {
+      var first = true;
+      if (dbUnsub) dbUnsub();
+      dbUnsub = db.collection('flocks').onSnapshot(function (snap) {
+        var list = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        dbLast = {};
+        list.forEach(function (f) { dbLast[f.id] = f; });
+        var data = normalize({ flocks: list });
+        if (first) { first = false; resolve({ data: data, source: 'db' }); }
+        else if (remoteCb) remoteCb(data);
+      }, function (e) {
+        if (first) { first = false; reject(new Error(e.message || e.code)); }
+      });
+    });
+  }
+
+  async function dbSave(data) {
+    var seen = {};
+    for (var i = 0; i < data.flocks.length; i++) {
+      var f = data.flocks[i];
+      seen[f.id] = true;
+      if (!dbLast[f.id] || !same(f, dbLast[f.id])) {
+        await db.collection('flocks').doc(f.id).set(Object.assign(pick(f), { updatedAt: new Date().toISOString() }));
+        dbLast[f.id] = f;
+      }
+    }
+    var gone = Object.keys(dbLast).filter(function (id) { return !seen[id]; });
+    for (var j = 0; j < gone.length; j++) {
+      await db.collection('flocks').doc(gone[j]).delete();
+      delete dbLast[gone[j]];
+    }
+  }
+
+  /*
+   * load(): คืนค่า { data, source, pendingLocal }
+   *   source = 'db' | 'github' | 'local' | 'seed'
+   */
+  async function load() {
+    db = await getDb();
+    if (db) return dbLoad();
+    if (ghEnabled()) {
+      var remote = await ghRead(gh);
+      if (remote) { var d = normalize(remote); lsSet(LS_DATA, { data: d, base: d.updated, dirty: false }); return { data: d, source: 'github' }; }
+    }
+    var local = lsGet(LS_DATA);
+    var seed = null;
+    try { seed = normalize(await fetchSeed()); } catch (e) { if (!local) throw e; }
+    if (local && local.data) {
+      // ถ้าในเครื่องไม่มีการแก้ค้าง และไฟล์บนเว็บใหม่กว่า → ใช้ไฟล์บนเว็บ
+      if (!local.dirty && seed && seed.updated !== local.base) {
+        lsSet(LS_DATA, { data: seed, base: seed.updated, dirty: false });
+        return { data: seed, source: 'seed' };
+      }
+      return { data: normalize(local.data), source: 'local', pendingLocal: !!local.dirty };
+    }
+    lsSet(LS_DATA, { data: seed, base: seed.updated, dirty: false });
+    return { data: seed, source: 'seed' };
+  }
+
+  /* save(): บันทึกลงเครื่องเสมอ แล้ว commit ขึ้น GitHub ถ้าตั้งค่าไว้ */
+  async function save(data, message) {
+    data.updated = new Date().toISOString();
+    if (db) { await dbSave(data); return { synced: true, online: true }; }
+    var prev = lsGet(LS_DATA) || {};
+    lsSet(LS_DATA, { data: data, base: prev.base, dirty: true });
+    if (!ghEnabled()) return { synced: false };
+    try {
+      await ghWrite(gh, data, message);
+    } catch (e) {
+      if (!e.conflict) throw e;
+      // มีคนอื่นบันทึกก่อน: อ่าน sha ล่าสุดแล้วลองอีกครั้ง (ข้อมูลชุดที่เห็นอยู่จะเขียนทับ)
+      var err = new Error('conflict'); err.conflict = true; throw err;
+    }
+    lsSet(LS_DATA, { data: data, base: data.updated, dirty: false });
+    return { synced: true };
+  }
+
+  async function refreshSha() { if (ghEnabled()) return ghRead(gh); return null; }
+
+  async function setGitHub(cfg) {
+    var c = Object.assign(ghConfig(), cfg);
+    // ทดสอบสิทธิ์ก่อนบันทึกค่า
+    var remote = await ghRead(c);
+    gh = c; lsSet(LS_GH, c);
+    return remote;
+  }
+  function clearGitHub() { gh = null; sha = null; lsDel(LS_GH); }
+
+  root.PulletStore = {
+    load: load, save: save, normalize: normalize, refreshSha: refreshSha,
+    onRemote: function (cb) { remoteCb = cb; },
+    isOnlineDb: function () { return !!db; },
+    ghConfig: ghConfig, ghEnabled: ghEnabled, setGitHub: setGitHub, clearGitHub: clearGitHub,
+    ghPushInitial: function (data) { return ghWrite(gh, data, 'Initial data from Pullet Age Tracker'); }
+  };
+})(this);
+</script>
+  <script>
+/*
+ * export.js — ส่งออก Excel (.xlsx) โดยใส่สูตรเดิมไว้ในทุกเซลล์ที่คำนวณ
+ * เปิดใน Excel แล้วสูตรคำนวณต่อได้ตามปกติ (E2 = TODAY())
+ */
+(function (root) {
+  'use strict';
+
+  var XLSX_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  var EXCEL_EPOCH = 25569; // 1970-01-01 ใน serial ของ Excel
+  var DATE_FMT = '[$-41E]d mmm yy';
+
+  function loadXLSX() {
+    if (root.XLSX) return Promise.resolve(root.XLSX);
+    return new Promise(function (ok, fail) {
+      var s = document.createElement('script');
+      s.src = XLSX_SRC; s.onload = function () { ok(root.XLSX); };
+      s.onerror = function () { fail(new Error('โหลดไลบรารี Excel ไม่ได้')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function serial(dayNum) { return dayNum === null || dayNum === undefined ? null : dayNum + EXCEL_EPOCH; }
+  function sheetName(s) { return String(s || 'Sheet').replace(/[\\\/\?\*\[\]:]/g, ' ').slice(0, 31); }
+
+  function buildSheet(XLSX, group, flocks, refISO, C) {
+    var ws = {};
+    var first = 6, last = first + flocks.length - 1;
+    function put(addr, cell) { ws[addr] = cell; }
+    function txt(addr, v) { put(addr, { t: 's', v: String(v) }); }
+    function f(addr, formula, v, z) {
+      var cell = { f: formula };
+      if (v === null || v === undefined || v === '') { cell.t = 's'; cell.v = ''; }
+      else if (typeof v === 'number') { cell.t = 'n'; cell.v = v; }
+      else { cell.t = 's'; cell.v = String(v); }
+      if (z) cell.z = z;
+      put(addr, cell);
+    }
+
+    txt('A1', group + '  —  ตารางติดตามอายุไก่สาว');
+    txt('A2', 'วันที่อ้างอิง :');
+    put('E2', { t: 'n', f: 'TODAY()', v: serial(C.toDay(refISO)), z: DATE_FMT });
+
+    txt('A4', 'ข้อมูลฝูงไก่สาว'); txt('G4', 'อายุปัจจุบัน'); txt('J4', 'แผนย้าย / จับ');
+    txt('N4', 'ก่อนจับ 17 วัน (TITER + PCR)'); txt('P4', 'ก่อนจับ 10 วัน (TITER + PCR)');
+    txt('R4', 'ก่อนจับ 3 วัน (PCR)'); txt('T4', 'ตรวจสอบ');
+    ['ฟาร์ม', 'Vendor', 'โรงเรือน', 'รุ่น', 'จำนวนไก่ (ตัว)', 'วันเริ่มเลี้ยง', 'อายุ (วัน)', 'อายุ (สัปดาห์-วัน)',
+      'ครบ 105 วัน', 'วันย้าย', 'อายุวันย้าย', 'เหลืออีก (วัน)', 'สถานะ', 'อายุ', 'วันที่เก็บ', 'อายุ', 'วันที่เก็บ',
+      'อายุ', 'วันที่เก็บ', 'ข้อมูลผิดปกติ'].forEach(function (h, i) { txt(XLSX.utils.encode_cell({ r: 4, c: i }), h); });
+
+    flocks.forEach(function (fl, i) {
+      var r = first + i, c = C.compute(fl, refISO, flocks);
+      if (fl.farm) txt('A' + r, fl.farm);
+      if (fl.vendor) put('B' + r, /^\d+$/.test(fl.vendor) ? { t: 'n', v: Number(fl.vendor) } : { t: 's', v: fl.vendor });
+      if (fl.house) txt('C' + r, fl.house);
+      if (fl.batch) put('D' + r, /^\d+$/.test(fl.batch) ? { t: 'n', v: Number(fl.batch) } : { t: 's', v: fl.batch });
+      if (fl.count != null && fl.count !== '') put('E' + r, { t: 'n', v: Number(fl.count), z: '#,##0' });
+      if (fl.start) put('F' + r, { t: 'n', v: serial(C.toDay(fl.start)), z: DATE_FMT });
+      if (fl.move) put('J' + r, { t: 'n', v: serial(C.toDay(fl.move)), z: DATE_FMT });
+
+      f('G' + r, 'IF($F' + r + '="","",$E$2-$F' + r + ')', c.age);
+      f('H' + r, 'IF($F' + r + '="","",INT($G' + r + '/7)&"-"&MOD($G' + r + ',7))', c.ageWD);
+      f('I' + r, 'IF($F' + r + '="","",$F' + r + '+105)', serial(c.d105), DATE_FMT);
+      f('K' + r, 'IF(OR($F' + r + '="",$J' + r + '=""),"",$J' + r + '-$F' + r + ')', c.moveAge);
+      f('L' + r, 'IF($J' + r + '="","",$J' + r + '-$E$2)', c.left, '0;\\-0;0');
+      f('M' + r, 'IF($F' + r + '="","",IF($J' + r + '="","รอกำหนดวันย้าย",IF($E$2>$J' + r + ',"ย้ายแล้ว",IF($J' + r + '-$E$2<=7,"ใกล้ย้าย","ปกติ"))))', c.status);
+      [['N', 'O', 17], ['P', 'Q', 10], ['R', 'S', 3]].forEach(function (p, k) {
+        var s = c.samples[k];
+        f(p[0] + r, 'IF($K' + r + '="","",$K' + r + '-' + p[2] + ')', s.age);
+        f(p[1] + r, 'IF($J' + r + '="","",$J' + r + '-' + p[2] + ')', serial(s.date), DATE_FMT);
+      });
+      var rng = '$A$' + first + ':$A$' + Math.max(last, 60) + ',$A' + r + ',$C$' + first + ':$C$' + Math.max(last, 60) + ',$C' + r;
+      f('T' + r,
+        'IF(OR($A' + r + '="",$C' + r + '=""),"",IF($F' + r + '="","ยังไม่กรอกวันเริ่มเลี้ยง",IF(NOT(ISNUMBER($F' + r + ')),"วันเริ่มเลี้ยงไม่ใช่วันที่",' +
+        'IF($F' + r + '>$E$2,"วันเริ่มเลี้ยงเป็นวันในอนาคต",IF($E' + r + '="","ยังไม่กรอกจำนวนไก่",IF(COUNTIFS(' + rng + ')>1,"โรงเรือนซ้ำ",' +
+        'IF($J' + r + '="",IF($G' + r + '>=91,"อายุ ≥91 วัน แต่ยังไม่กำหนดวันย้าย",""),IF(NOT(ISNUMBER($J' + r + ')),"วันย้ายไม่ใช่วันที่",' +
+        'IF($J' + r + '<=$F' + r + ',"วันย้ายอยู่ก่อนวันเริ่มเลี้ยง",IF($K' + r + '<105,"ย้ายก่อนครบ 105 วัน",IF($K' + r + '>125,"อายุวันย้ายเกิน 125 วัน","")))))))))))',
+        c.issue);
+    });
+
+    var tot = last + 1;
+    txt('A' + tot, 'รวม ' + flocks.length + ' โรงเรือน');
+    var sum = flocks.reduce(function (a, x) { return a + (Number(x.count) || 0); }, 0);
+    put('E' + tot, { t: 'n', f: flocks.length ? 'SUM(E' + first + ':E' + last + ')' : '0', v: sum, z: '#,##0' });
+
+    ws['!ref'] = 'A1:T' + tot;
+    ws['!merges'] = [
+      { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }, { s: { r: 3, c: 6 }, e: { r: 3, c: 8 } },
+      { s: { r: 3, c: 9 }, e: { r: 3, c: 12 } }, { s: { r: 3, c: 13 }, e: { r: 3, c: 14 } },
+      { s: { r: 3, c: 15 }, e: { r: 3, c: 16 } }, { s: { r: 3, c: 17 }, e: { r: 3, c: 18 } }
+    ];
+    ws['!cols'] = [24, 12, 9, 6, 12, 11, 9, 11, 11, 11, 10, 10, 15, 6, 11, 6, 11, 6, 11, 34].map(function (w) { return { wch: w }; });
+    return ws;
+  }
+
+  async function exportXlsx(data, refISO, groups) {
+    var XLSX = await loadXLSX();
+    var C = root.PulletCalc;
+    var wb = XLSX.utils.book_new();
+    groups.forEach(function (g) {
+      var list = C.sortFlocks(data.flocks.filter(function (f) { return f.group === g; }), refISO);
+      XLSX.utils.book_append_sheet(wb, buildSheet(XLSX, g, list, refISO, C), sheetName(g));
+    });
+    XLSX.writeFile(wb, 'Pullet_Age_' + refISO + '.xlsx');
+  }
+
+  function download(name, text, type) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  root.PulletExport = {
+    xlsx: exportXlsx,
+    json: function (data) { download('flocks_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data, null, 2), 'application/json'); }
+  };
+})(this);
+</script>
+  <script>
+/* app.js — หน้าจอ, ตาราง, ฟอร์มเพิ่ม/แก้ไข */
+(function () {
+  'use strict';
+
+  var C = window.PulletCalc, S = window.PulletStore, X = window.PulletExport;
+  var $ = function (s) { return document.querySelector(s); };
+  var TH_MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  var LS_UI = 'pullet.ui.v1';
+
+  var state = {
+    data: { flocks: [] },
+    ref: C.todayISO(),
+    group: 'ทั้งหมด',
+    q: '',
+    showMoved: true,
+    onlyIssue: false,
+    editing: null
+  };
+  try { Object.assign(state, JSON.parse(localStorage.getItem(LS_UI)) || {}); } catch (e) { /* ignore */ }
+  state.ref = C.todayISO(); // วันที่อ้างอิงเริ่มที่วันนี้เสมอ (เหมือน =TODAY())
+
+  function saveUI() {
+    try { localStorage.setItem(LS_UI, JSON.stringify({ group: state.group, showMoved: state.showMoved, onlyIssue: state.onlyIssue })); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- formatting ---------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmtDay(n) {
+    if (n === null || n === undefined) return '';
+    var d = new Date(n * 86400000);
+    return d.getUTCDate() + ' ' + TH_MON[d.getUTCMonth()] + ' ' + String(d.getUTCFullYear()).slice(2);
+  }
+  function fmtISO(s) { return fmtDay(C.toDay(s)); }
+  function fmtNum(v) { return v === null || v === undefined || v === '' ? '' : Number(v).toLocaleString('en-US'); }
+  function nz(v) { return v === null || v === undefined ? '' : v; }
+  function weekday(n) { return ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'][new Date(n * 86400000).getUTCDay()]; }
+
+  var STATUS_CLS = { 'ย้ายแล้ว': 'moved', 'ใกล้ย้าย': 'soon', 'ปกติ': 'ok', 'รอกำหนดวันย้าย': 'wait' };
+
+  /* ---------- data helpers ---------- */
+  function groups() {
+    var seen = [];
+    state.data.flocks.forEach(function (f) { if (f.group && seen.indexOf(f.group) < 0) seen.push(f.group); });
+    return seen;
+  }
+  function rows() {
+    var all = state.data.flocks;
+    return C.sortFlocks(all, state.ref).map(function (f) {
+      return { f: f, c: C.compute(f, state.ref, all) };
+    });
+  }
+  function filtered(list) {
+    var q = state.q.trim().toLowerCase();
+    return list.filter(function (r) {
+      if (state.group !== 'ทั้งหมด' && r.f.group !== state.group) return false;
+      if (!state.showMoved && r.c.status === 'ย้ายแล้ว') return false;
+      if (state.onlyIssue && !r.c.issue) return false;
+      if (q && [r.f.farm, r.f.house, r.f.vendor, r.f.group, r.f.batch].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    var all = rows();
+    var list = filtered(all);
+    var scope = all.filter(function (r) { return state.group === 'ทั้งหมด' || r.f.group === state.group; });
+    renderRef();
+    renderKpis(scope);
+    renderDue(scope);
+    renderSeg();
+    renderTable(list);
+    renderCards(list);
+    $('#empty').hidden = list.length > 0;
+    $('#empty').textContent = state.data.flocks.length ? 'ไม่พบฝูงตามเงื่อนไขที่เลือก' : 'ยังไม่มีข้อมูล — กด “+ เพิ่มฝูง” เพื่อเริ่ม';
+  }
+
+  function renderRef() {
+    $('#refDate').value = state.ref;
+    $('#refToday').hidden = state.ref === C.todayISO();
+  }
+
+  function renderKpis(scope) {
+    var active = scope.filter(function (r) { return r.c.status !== 'ย้ายแล้ว'; });
+    var birds = active.reduce(function (a, r) { return a + (Number(r.f.count) || 0); }, 0);
+    var soon = scope.filter(function (r) { return r.c.status === 'ใกล้ย้าย'; }).length;
+    var due = 0;
+    scope.forEach(function (r) { r.c.samples.forEach(function (s) { if (s.state === 'due') due++; }); });
+    var issues = scope.filter(function (r) { return r.c.issue; }).length;
+    var next = active.filter(function (r) { return r.c.left !== null; })[0];
+    var k = [
+      { label: 'ฝูงที่ยังไม่ย้าย', value: active.length, note: 'จากทั้งหมด ' + scope.length + ' โรงเรือน' },
+      { label: 'ไก่รวม (ตัว)', value: fmtNum(birds), note: 'เฉพาะฝูงที่ยังไม่ย้าย' },
+      { label: 'ย้ายครั้งถัดไป', value: next ? fmtISO(next.f.move) : '—', note: next ? esc(next.f.farm + ' ' + next.f.house) + ' · อีก ' + next.c.left + ' วัน' : 'ยังไม่มีวันย้าย', tone: next && next.c.left <= 7 ? 'soon' : '' },
+      { label: 'ใกล้ย้าย (≤ 7 วัน)', value: soon, tone: soon ? 'soon' : '' },
+      { label: 'เก็บตัวอย่าง 7 วันนี้', value: due, note: 'ครั้ง', tone: due ? 'due' : '' },
+      { label: 'ข้อมูลผิดปกติ', value: issues, tone: issues ? 'issue' : '', act: issues ? 'issue' : '' }
+    ];
+    $('#kpis').innerHTML = k.map(function (x) {
+      var tag = x.act ? 'button type="button" data-kpi="' + x.act + '"' : 'div';
+      return '<' + tag + ' class="kpi ' + (x.tone || '') + '"><span class="k-label">' + x.label + '</span>' +
+        '<span class="k-value">' + x.value + '</span>' + (x.note ? '<span class="k-note">' + x.note + '</span>' : '') +
+        '</' + (x.act ? 'button' : 'div') + '>';
+    }).join('');
+  }
+
+  function renderDue(scope) {
+    var ref = C.toDay(state.ref), items = [];
+    scope.forEach(function (r) {
+      r.c.samples.forEach(function (s) { if (s.state === 'due') items.push({ r: r, s: s }); });
+    });
+    items.sort(function (a, b) { return a.s.date - b.s.date || b.s.days - a.s.days; });
+    $('#dueRange').textContent = fmtDay(ref) + ' – ' + fmtDay(ref + C.SAMPLE_WINDOW);
+    $('#dueList').innerHTML = items.length ? items.map(function (it) {
+      var d = it.s.date - ref;
+      var when = d === 0 ? 'วันนี้' : d === 1 ? 'พรุ่งนี้' : 'อีก ' + d + ' วัน';
+      return '<li data-id="' + esc(it.r.f.id) + '" tabindex="0">' +
+        '<span class="due-date"><b>' + fmtDay(it.s.date) + '</b><small>' + weekday(it.s.date) + ' · ' + when + '</small></span>' +
+        '<span class="due-what"><b>' + esc(it.r.f.farm) + ' · ' + esc(it.r.f.house) + '</b><small>ก่อนจับ ' + it.s.days + ' วัน · อายุ ' + nz(it.s.age) + ' วัน · ' + esc(it.r.f.group) + '</small></span>' +
+        '<span class="pill test">' + it.s.test + '</span>' +
+        '</li>';
+    }).join('') : '<li class="none">ไม่มีกำหนดเก็บตัวอย่างใน 7 วันข้างหน้า</li>';
+  }
+
+  function renderSeg() {
+    var gs = ['ทั้งหมด'].concat(groups());
+    if (gs.indexOf(state.group) < 0) state.group = 'ทั้งหมด';
+    $('#groupSeg').innerHTML = gs.map(function (g) {
+      var n = g === 'ทั้งหมด' ? state.data.flocks.length : state.data.flocks.filter(function (f) { return f.group === g; }).length;
+      return '<button type="button" role="tab" aria-selected="' + (g === state.group) + '" data-group="' + esc(g) + '">' + esc(g) + ' <span>' + n + '</span></button>';
+    }).join('');
+  }
+
+  function sampleCells(c) {
+    return c.samples.map(function (s) {
+      return '<td class="s-date ' + s.state + '">' + (s.date !== null ? fmtDay(s.date) + '<small>อายุ ' + nz(s.age) + ' วัน</small>' : '') + '</td>';
+    }).join('');
+  }
+
+  function renderTable(list) {
+    var lastRank = null;
+    $('#gridBody').innerHTML = list.map(function (r) {
+      var f = r.f, c = r.c;
+      var rank = c.status === 'ย้ายแล้ว' ? 'moved' : f.move ? 'up' : 'nomove';
+      var sep = '';
+      if (rank !== lastRank && lastRank !== null) {
+        sep = '<tr class="sep"><td colspan="16"><span>' + (rank === 'nomove' ? 'ยังไม่กำหนดวันย้าย' : 'ย้ายแล้ว') + '</span></td></tr>';
+      }
+      lastRank = rank;
+      return sep + '<tr data-id="' + esc(f.id) + '" class="r-' + (STATUS_CLS[c.status] || 'none') + '" tabindex="0">' +
+        '<td class="sticky farm"><b>' + esc(f.farm) + '</b><span><em>' + esc(f.house) + '</em> · ' + esc(f.group) + '</span></td>' +
+        '<td class="mono">' + esc(f.vendor) + '</td>' +
+        '<td>' + esc(f.batch) + '</td>' +
+        '<td class="num">' + fmtNum(f.count) + '</td>' +
+        '<td>' + fmtISO(f.start) + '</td>' +
+        '<td class="num ' + (c.age !== null && c.age >= 105 ? 'age-ok' : '') + '">' + nz(c.age) + '</td>' +
+        '<td class="num">' + c.ageWD + '</td>' +
+        '<td>' + fmtDay(c.d105) + '</td>' +
+        '<td class="move"><b>' + fmtISO(f.move) + '</b></td>' +
+        '<td class="num">' + nz(c.moveAge) + '</td>' +
+        '<td class="num left">' + nz(c.left) + '</td>' +
+        '<td>' + (c.status ? '<span class="status ' + STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') + '</td>' +
+        sampleCells(c) +
+        '<td class="issue">' + (c.issue ? '<span>' + esc(c.issue) + '</span>' : '') + '</td>' +
+        '</tr>';
+    }).join('');
+    var birds = list.reduce(function (a, r) { return a + (Number(r.f.count) || 0); }, 0);
+    $('#gridFoot').innerHTML = list.length ? '<tr><td class="sticky">รวม ' + list.length + ' โรงเรือน</td><td></td><td></td><td class="num">' + fmtNum(birds) + '</td><td colspan="11"></td></tr>' : '';
+    document.querySelector('.table-wrap').hidden = !list.length;
+  }
+
+  function renderCards(list) {
+    $('#cards').innerHTML = list.map(function (r) {
+      var f = r.f, c = r.c;
+      return '<article class="card r-' + (STATUS_CLS[c.status] || 'none') + '" data-id="' + esc(f.id) + '" tabindex="0">' +
+        '<header><div><b>' + esc(f.farm) + '</b> <span class="house">' + esc(f.house) + '</span>' +
+        '<small>' + esc(f.group) + (f.vendor ? ' · ' + esc(f.vendor) : '') + (f.batch ? ' · รุ่น ' + esc(f.batch) : '') + '</small></div>' +
+        (c.status ? '<span class="status ' + STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') + '</header>' +
+        '<dl>' +
+        '<div><dt>วันย้าย</dt><dd><b>' + (fmtISO(f.move) || '—') + '</b>' + (c.left !== null ? '<small>' + (c.left >= 0 ? 'อีก ' + c.left + ' วัน' : 'ผ่านมา ' + (-c.left) + ' วัน') + '</small>' : '') + '</dd></div>' +
+        '<div><dt>อายุ</dt><dd><b class="' + (c.age !== null && c.age >= 105 ? 'age-ok' : '') + '">' + (c.age !== null ? c.age + ' วัน' : '—') + '</b><small>' + c.ageWD + ' สัปดาห์</small></dd></div>' +
+        '<div><dt>อายุวันย้าย</dt><dd><b>' + (c.moveAge !== null ? c.moveAge + ' วัน' : '—') + '</b><small>ครบ 105: ' + (fmtDay(c.d105) || '—') + '</small></dd></div>' +
+        '<div><dt>จำนวนไก่</dt><dd><b>' + (fmtNum(f.count) || '—') + '</b><small>เริ่ม ' + (fmtISO(f.start) || '—') + '</small></dd></div>' +
+        '</dl>' +
+        (f.move ? '<ul class="samples">' + c.samples.map(function (s) {
+          return '<li class="' + s.state + '"><span>−' + s.days + ' วัน</span><b>' + fmtDay(s.date) + '</b><small>' + s.test + ' · อายุ ' + nz(s.age) + '</small></li>';
+        }).join('') + '</ul>' : '') +
+        (c.issue ? '<p class="issue-line">⚠ ' + esc(c.issue) + '</p>' : '') +
+        '</article>';
+    }).join('');
+  }
+
+  /* ---------- edit dialog ---------- */
+  var dlg = $('#editDlg'), form = $('#editForm');
+  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move'];
+
+  function openEdit(id) {
+    var f = id ? state.data.flocks.find(function (x) { return x.id === id; }) : null;
+    state.editing = f ? f.id : null;
+    $('#editTitle').textContent = f ? 'แก้ไขฝูง' : 'เพิ่มฝูง';
+    $('#delBtn').hidden = !f;
+    var init = f || { group: state.group !== 'ทั้งหมด' ? state.group : (groups()[0] || ''), farm: '', vendor: '', house: '', batch: '', count: '', start: '', move: '' };
+    FIELDS.forEach(function (k) { form.elements[k].value = init[k] == null ? '' : init[k]; });
+    $('#dlGroups').innerHTML = groups().map(function (g) { return '<option value="' + esc(g) + '">'; }).join('');
+    updateFarmList();
+    updatePreview();
+    form.querySelectorAll('.invalid').forEach(function (el) { el.classList.remove('invalid'); });
+    dlg.showModal();
+    setTimeout(function () { form.elements[f ? 'move' : (init.group ? 'farm' : 'group')].focus(); }, 30);
+  }
+
+  function updateFarmList() {
+    var g = form.elements.group.value.trim(), farms = {};
+    state.data.flocks.forEach(function (f) { if (!g || f.group === g) farms[f.farm] = f.vendor; });
+    $('#dlFarms').innerHTML = Object.keys(farms).map(function (k) { return '<option value="' + esc(k) + '">'; }).join('');
+    return farms;
+  }
+
+  function formValue() {
+    var v = {};
+    FIELDS.forEach(function (k) { v[k] = form.elements[k].value.trim(); });
+    v.count = v.count === '' ? null : Number(v.count);
+    return v;
+  }
+
+  function updatePreview() {
+    var v = formValue();
+    v.id = state.editing || '__new';
+    var others = state.data.flocks.filter(function (x) { return x.id !== state.editing; }).concat([v]);
+    var c = C.compute(v, state.ref, others);
+    var cell = function (label, val, cls) { return '<div class="' + (cls || '') + '"><span>' + label + '</span><b>' + (val === '' || val === null ? '—' : val) + '</b></div>'; };
+    $('#preview').innerHTML =
+      '<div class="pv-grid">' +
+      cell('อายุ (วัน)', nz(c.age), c.age >= 105 ? 'age-ok' : '') + cell('สัปดาห์-วัน', c.ageWD) + cell('ครบ 105 วัน', fmtDay(c.d105)) +
+      cell('อายุวันย้าย', nz(c.moveAge)) + cell('เหลืออีก (วัน)', nz(c.left)) +
+      cell('สถานะ', c.status ? '<span class="status ' + STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') +
+      c.samples.map(function (s) { return cell('ก่อนจับ ' + s.days + ' วัน', s.date !== null ? fmtDay(s.date) + ' <small>(อายุ ' + nz(s.age) + ')</small>' : '', 's-date ' + s.state); }).join('') +
+      '</div>' + (c.issue ? '<p class="issue-line">⚠ ' + esc(c.issue) + '</p>' : '');
+  }
+
+  form.addEventListener('input', function (e) {
+    if (e.target.name === 'group') updateFarmList();
+    if (e.target.name === 'farm') {
+      var farms = updateFarmList(), vendor = farms[e.target.value.trim()];
+      if (vendor && !form.elements.vendor.value) form.elements.vendor.value = vendor;
+    }
+    e.target.classList.remove('invalid');
+    updatePreview();
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var v = formValue(), bad = false;
+    ['group', 'farm', 'house'].forEach(function (k) { if (!v[k]) { form.elements[k].classList.add('invalid'); bad = true; } });
+    if (bad) { toast('กรุณากรอก กลุ่ม, ฟาร์ม และโรงเรือน'); return; }
+    var msg;
+    if (state.editing) {
+      var f = state.data.flocks.find(function (x) { return x.id === state.editing; });
+      Object.assign(f, v);
+      msg = 'แก้ไข ' + v.farm + ' ' + v.house;
+    } else {
+      v.id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      state.data.flocks.push(v);
+      msg = 'เพิ่ม ' + v.farm + ' ' + v.house;
+    }
+    dlg.close();
+    render();
+    persist(msg);
+  });
+
+  $('#delBtn').addEventListener('click', function () {
+    var f = state.data.flocks.find(function (x) { return x.id === state.editing; });
+    if (!f || !confirm('ลบ ' + f.farm + ' ' + f.house + ' ?')) return;
+    state.data.flocks = state.data.flocks.filter(function (x) { return x.id !== f.id; });
+    dlg.close();
+    render();
+    persist('ลบ ' + f.farm + ' ' + f.house);
+  });
+
+  document.querySelectorAll('[data-close]').forEach(function (b) {
+    b.addEventListener('click', function () { b.closest('dialog').close(); });
+  });
+
+  /* ---------- persistence ---------- */
+  async function persist(msg) {
+    setSync('saving', 'กำลังบันทึก…');
+    try {
+      var res = await S.save(state.data, msg);
+      var where = res.online ? 'บันทึกออนไลน์แล้ว' : res.synced ? 'บันทึกขึ้น GitHub แล้ว' : 'บันทึกในเครื่องนี้แล้ว';
+      setSync(res.synced ? 'synced' : 'local', res.online ? 'ข้อมูลออนไลน์' : res.synced ? 'บันทึกขึ้น GitHub แล้ว' : 'บันทึกในเครื่องนี้');
+      toast(msg + ' — ' + where);
+    } catch (e) {
+      if (e.conflict) {
+        setSync('error', 'ข้อมูลบน GitHub เปลี่ยน');
+        banner('มีคนบันทึกข้อมูลบน GitHub ก่อนหน้านี้ การแก้ไขล่าสุดของคุณยังเก็บอยู่ในเครื่อง — <button type="button" class="link-btn" data-banner="force">บันทึกทับ</button> หรือ <button type="button" class="link-btn" data-banner="reload">โหลดข้อมูลล่าสุด (ทิ้งการแก้ไข)</button>');
+      } else if (S.isOnlineDb()) {
+        setSync('error', 'บันทึกไม่สำเร็จ');
+        toast('บันทึกไม่สำเร็จ: ' + (e.message || e.code) + ' — คุณอาจมีสิทธิ์ดูอย่างเดียว', 6000);
+      } else {
+        setSync('error', 'บันทึกขึ้น GitHub ไม่สำเร็จ');
+        toast('บันทึกขึ้น GitHub ไม่สำเร็จ: ' + e.message + ' (ข้อมูลยังอยู่ในเครื่องนี้)', 6000);
+      }
+    }
+  }
+
+  async function reload() {
+    setSync('saving', 'กำลังโหลด…');
+    try {
+      var res = await S.load();
+      state.data = res.data;
+      banner('');
+      document.querySelectorAll('[data-act="github"], #menu hr').forEach(function (el) { el.hidden = res.source === 'db'; });
+      if (res.source === 'db') setSync('synced', 'ข้อมูลออนไลน์');
+      else if (res.source === 'github') setSync('synced', 'เชื่อมต่อ GitHub');
+      else if (res.pendingLocal) {
+        setSync('local', 'บันทึกในเครื่องนี้');
+        if (!S.ghEnabled()) banner('มีการแก้ไขที่บันทึกไว้เฉพาะในเบราว์เซอร์นี้ — ตั้งค่า <button type="button" class="link-btn" data-banner="github">บันทึกขึ้น GitHub</button> เพื่อให้ทุกคนเห็นข้อมูลเดียวกัน');
+      } else setSync('local', S.ghEnabled() ? 'ยังไม่มีไฟล์บน GitHub' : 'บันทึกในเครื่องนี้');
+    } catch (e) {
+      setSync('error', 'โหลดข้อมูลไม่สำเร็จ');
+      banner('โหลดข้อมูลไม่สำเร็จ: ' + esc(e.message));
+    }
+    render();
+  }
+
+  function setSync(st, text) {
+    $('#syncChip').dataset.state = st;
+    $('#syncText').textContent = text;
+  }
+
+  /* ---------- GitHub settings ---------- */
+  var ghDlg = $('#ghDlg'), ghForm = $('#ghForm');
+  function openGitHub() {
+    var c = S.ghConfig();
+    ['owner', 'repo', 'branch', 'path', 'token'].forEach(function (k) { ghForm.elements[k].value = c[k] || ''; });
+    ghDlg.showModal();
+  }
+  ghForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var cfg = {};
+    ['owner', 'repo', 'branch', 'path', 'token'].forEach(function (k) { cfg[k] = ghForm.elements[k].value.trim(); });
+    if (!cfg.token) { toast('กรุณาใส่ Token'); return; }
+    try {
+      var remote = await S.setGitHub(cfg);
+      ghDlg.close();
+      if (!remote) { await S.ghPushInitial(state.data); toast('สร้างไฟล์ข้อมูลบน GitHub แล้ว'); }
+      else toast('เชื่อมต่อ GitHub แล้ว');
+      reload();
+    } catch (err) {
+      toast('เชื่อมต่อไม่สำเร็จ: ' + err.message, 6000);
+    }
+  });
+  $('#ghClear').addEventListener('click', function () { S.clearGitHub(); ghDlg.close(); toast('ล้างการตั้งค่า GitHub แล้ว'); reload(); });
+
+  /* ---------- misc UI ---------- */
+  var toastTimer;
+  function toast(msg, ms) {
+    var t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 3200);
+  }
+  function banner(html) { var b = $('#banner'); b.innerHTML = html; b.hidden = !html; }
+
+  document.addEventListener('click', async function (e) {
+    var t = e.target;
+    var row = t.closest('[data-id]');
+    if (row && !t.closest('dialog')) { openEdit(row.dataset.id); return; }
+    var g = t.closest('[data-group]');
+    if (g) { state.group = g.dataset.group; saveUI(); render(); return; }
+    if (t.closest('[data-kpi="issue"]')) { state.onlyIssue = true; $('#onlyIssue').checked = true; saveUI(); render(); document.getElementById('listTitle').scrollIntoView({ behavior: 'smooth' }); return; }
+    var bAct = t.closest('[data-banner]');
+    if (bAct) {
+      var a = bAct.dataset.banner;
+      if (a === 'github') openGitHub();
+      if (a === 'reload') { try { localStorage.removeItem('pullet.data.v1'); } catch (er) { /* ignore */ } reload(); }
+      if (a === 'force') { try { await S.refreshSha(); } catch (er) { /* ignore */ } banner(''); persist('บันทึกทับข้อมูล'); }
+      return;
+    }
+    if (!t.closest('.menu-wrap')) closeMenu();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.matches('[data-id]')) openEdit(e.target.dataset.id);
+  });
+
+  function closeMenu() { $('#menu').hidden = true; $('#menuBtn').setAttribute('aria-expanded', 'false'); }
+  $('#menuBtn').addEventListener('click', function () {
+    var m = $('#menu'); m.hidden = !m.hidden; this.setAttribute('aria-expanded', String(!m.hidden));
+  });
+  $('#menu').addEventListener('click', async function (e) {
+    var act = e.target.dataset.act; if (!act) return;
+    closeMenu();
+    if (act === 'xlsx') {
+      try { toast('กำลังสร้างไฟล์ Excel…'); await X.xlsx(state.data, state.ref, groups()); } catch (err) { toast(err.message); }
+    }
+    if (act === 'json') X.json(state.data);
+    if (act === 'import') $('#importFile').click();
+    if (act === 'github') openGitHub();
+    if (act === 'reload') reload();
+  });
+  $('#syncChip').addEventListener('click', function () { if (!S.isOnlineDb()) openGitHub(); });
+  // ข้อมูลเปลี่ยนจากผู้ใช้อื่น (โหมดออนไลน์) → แสดงผลทันที
+  S.onRemote(function (data) { state.data = data; render(); });
+
+  $('#importFile').addEventListener('change', function () {
+    var file = this.files[0]; if (!file) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = S.normalize(JSON.parse(rd.result));
+        if (!confirm('นำเข้า ' + d.flocks.length + ' ฝูง แทนที่ข้อมูลปัจจุบัน ' + state.data.flocks.length + ' ฝูง ?')) return;
+        state.data = d; render(); persist('นำเข้าข้อมูล ' + d.flocks.length + ' ฝูง');
+      } catch (err) { toast('ไฟล์ไม่ถูกต้อง: ' + err.message); }
+    };
+    rd.readAsText(file);
+    this.value = '';
+  });
+
+  $('#addBtn').addEventListener('click', function () { openEdit(null); });
+  $('#refDate').addEventListener('change', function () { if (this.value) { state.ref = this.value; render(); } });
+  $('#refToday').addEventListener('click', function () { state.ref = C.todayISO(); render(); });
+  $('#search').addEventListener('input', function () { state.q = this.value; render(); });
+  $('#showMoved').checked = state.showMoved;
+  $('#onlyIssue').checked = state.onlyIssue;
+  $('#showMoved').addEventListener('change', function () { state.showMoved = this.checked; saveUI(); render(); });
+  $('#onlyIssue').addEventListener('change', function () { state.onlyIssue = this.checked; saveUI(); render(); });
+
+  // อัปเดตวันที่อ้างอิงอัตโนมัติเมื่อข้ามวัน (ถ้ายังใช้ "วันนี้" อยู่)
+  var lastToday = C.todayISO();
+  setInterval(function () {
+    var t = C.todayISO();
+    if (t !== lastToday) { if (state.ref === lastToday) state.ref = t; lastToday = t; render(); }
+  }, 60000);
+
+  reload();
+})();
+</script>
+</body>
+</html>
