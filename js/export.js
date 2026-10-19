@@ -42,10 +42,10 @@
 
     txt('A4', 'ข้อมูลฝูงไก่สาว'); txt('G4', 'อายุปัจจุบัน'); txt('J4', 'แผนย้าย / จับ');
     txt('N4', 'ก่อนจับ 17 วัน (TITER + PCR)'); txt('P4', 'ก่อนจับ 10 วัน (TITER + PCR)');
-    txt('R4', 'ก่อนจับ 3 วัน (PCR)'); txt('T4', 'ตรวจสอบ');
+    txt('R4', 'ก่อนจับ 3 วัน (PCR)'); txt('T4', 'ตรวจสอบ'); txt('U4', 'เก็บตัวอย่างแล้ว');
     ['ฟาร์ม', 'Vendor', 'โรงเรือน', 'รุ่น', 'จำนวนไก่ (ตัว)', 'วันเริ่มเลี้ยง', 'อายุ (วัน)', 'อายุ (สัปดาห์-วัน)',
       'ครบ 105 วัน', 'วันย้าย', 'อายุวันย้าย', 'เหลืออีก (วัน)', 'สถานะ', 'อายุ', 'วันที่เก็บ', 'อายุ', 'วันที่เก็บ',
-      'อายุ', 'วันที่เก็บ', 'ข้อมูลผิดปกติ'].forEach(function (h, i) { txt(XLSX.utils.encode_cell({ r: 4, c: i }), h); });
+      'อายุ', 'วันที่เก็บ', 'ข้อมูลผิดปกติ', '17 วัน', '10 วัน', '3 วัน'].forEach(function (h, i) { txt(XLSX.utils.encode_cell({ r: 4, c: i }), h); });
 
     flocks.forEach(function (fl, i) {
       var r = first + i, c = C.compute(fl, refISO, flocks);
@@ -68,6 +68,7 @@
         f(p[0] + r, 'IF($K' + r + '="","",$K' + r + '-' + p[2] + ')', s.age);
         f(p[1] + r, 'IF($J' + r + '="","",$J' + r + '-' + p[2] + ')', serial(s.date), DATE_FMT);
       });
+      [['U', 17], ['V', 10], ['W', 3]].forEach(function (p) { if (fl.done && fl.done[p[1]]) txt(p[0] + r, '✓'); });
       var rng = '$A$' + first + ':$A$' + Math.max(last, 60) + ',$A' + r + ',$C$' + first + ':$C$' + Math.max(last, 60) + ',$C' + r;
       f('T' + r,
         'IF(OR($A' + r + '="",$C' + r + '=""),"",IF($F' + r + '="","ยังไม่กรอกวันเริ่มเลี้ยง",IF(NOT(ISNUMBER($F' + r + ')),"วันเริ่มเลี้ยงไม่ใช่วันที่",' +
@@ -82,13 +83,14 @@
     var sum = flocks.reduce(function (a, x) { return a + (Number(x.count) || 0); }, 0);
     put('E' + tot, { t: 'n', f: flocks.length ? 'SUM(E' + first + ':E' + last + ')' : '0', v: sum, z: '#,##0' });
 
-    ws['!ref'] = 'A1:T' + tot;
+    ws['!ref'] = 'A1:W' + tot;
     ws['!merges'] = [
       { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }, { s: { r: 3, c: 6 }, e: { r: 3, c: 8 } },
       { s: { r: 3, c: 9 }, e: { r: 3, c: 12 } }, { s: { r: 3, c: 13 }, e: { r: 3, c: 14 } },
-      { s: { r: 3, c: 15 }, e: { r: 3, c: 16 } }, { s: { r: 3, c: 17 }, e: { r: 3, c: 18 } }
+      { s: { r: 3, c: 15 }, e: { r: 3, c: 16 } }, { s: { r: 3, c: 17 }, e: { r: 3, c: 18 } },
+      { s: { r: 3, c: 20 }, e: { r: 3, c: 22 } }
     ];
-    ws['!cols'] = [24, 12, 9, 6, 12, 11, 9, 11, 11, 11, 10, 10, 15, 6, 11, 6, 11, 6, 11, 34].map(function (w) { return { wch: w }; });
+    ws['!cols'] = [24, 12, 9, 6, 12, 11, 9, 11, 11, 11, 10, 10, 15, 6, 11, 6, 11, 6, 11, 34, 7, 7, 7].map(function (w) { return { wch: w }; });
     return ws;
   }
 

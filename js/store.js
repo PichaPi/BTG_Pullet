@@ -76,6 +76,13 @@
     return res.json();
   }
 
+  /* สถานะการเก็บตัวอย่าง: { "17": true, "10": true, "3": true } */
+  function normDone(x) {
+    var o = {};
+    [17, 10, 3].forEach(function (n) { if (x && x[n]) o[n] = true; });
+    return o;
+  }
+
   function normalize(d) {
     if (Array.isArray(d)) d = { flocks: d };
     d = d || {};
@@ -87,14 +94,15 @@
         vendor: String(f.vendor == null ? '' : f.vendor).trim(), house: String(f.house || '').trim(),
         batch: String(f.batch == null ? '' : f.batch).trim(),
         count: f.count === '' || f.count == null ? null : Number(f.count),
-        start: f.start || '', move: f.move || ''
+        start: f.start || '', move: f.move || '',
+        done: normDone(f.done)
       };
     });
     return d;
   }
 
   /* ---------- Claude Artifact db (ใช้เมื่อเปิดแอปเป็น Artifact บน claude.ai) ---------- */
-  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move'];
+  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move', 'done'];
   var dbPromise = null, db = null, dbUnsub = null, dbLast = {}, remoteCb = null;
 
   function getDb() {
@@ -105,7 +113,7 @@
     }
     return dbPromise;
   }
-  function pick(f) { var o = {}; FIELDS.forEach(function (k) { o[k] = f[k] == null ? null : f[k]; }); return o; }
+  function pick(f) { var o = {}; FIELDS.forEach(function (k) { o[k] = f[k] == null ? null : f[k]; }); o.done = normDone(f.done); return o; }
   function same(a, b) { return JSON.stringify(pick(a)) === JSON.stringify(pick(b)); }
 
   function dbLoad() {

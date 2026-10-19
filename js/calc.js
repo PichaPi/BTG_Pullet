@@ -70,17 +70,22 @@
     }
 
     // แผนเก็บตัวอย่างย้อนหลังจากวันย้าย
+    // state: 'done' = ติ๊กว่าเก็บแล้ว (สีเทา) · 'overdue' = เลยวันแต่ยังไม่เก็บ (ตัวแดง)
+    //        'due' = ถึงกำหนดภายใน 7 วัน (ไฮไลต์เหลือง) · '' = ยังไม่ถึง
+    var done = f.done || {};
     r.samples = SAMPLE_PLAN.map(function (p) {
       var date = move === null ? null : move - p.days;
+      var isDone = !!done[p.days];
       var state = '';
       if (date !== null) {
-        if (date < ref) state = 'past';
+        if (isDone) state = 'done';
+        else if (date < ref) state = 'overdue';
         else if (date <= ref + SAMPLE_WINDOW) state = 'due';
       }
       return {
         days: p.days, test: p.test,
         age: r.moveAge === null ? null : r.moveAge - p.days,
-        date: date, state: state
+        date: date, state: state, done: isDone
       };
     });
 

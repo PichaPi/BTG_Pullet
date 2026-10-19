@@ -58,3 +58,13 @@ const order = C.sortFlocks([
 assert.deepStrictEqual(order, ['near', 'far', 'none', 'moved']);
 
 console.log('✓ calc tests passed');
+
+// สถานะการเก็บตัวอย่าง (checkbox)
+(function () {
+  const base = { farm: 'F', house: 'H', count: 1, start: '2026-07-01', move: '2026-10-30' }; // วันเก็บ 13/20/27 ต.ค.
+  let s = C.compute(base, REF, []).samples.map(x => x.state);
+  assert.deepStrictEqual(s, ['overdue', 'due', '']);
+  s = C.compute(Object.assign({}, base, { done: { 17: true, 10: true } }), REF, []).samples.map(x => x.state);
+  assert.deepStrictEqual(s, ['done', 'done', '']);
+  console.log('✓ sample checkbox tests passed');
+})();

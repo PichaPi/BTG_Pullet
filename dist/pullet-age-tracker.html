@@ -133,7 +133,7 @@ button.kpi { cursor: pointer; }
 
 /* ---------- due list ---------- */
 .due-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 8px; }
-.due-list li { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
+.due-list li { display: grid; grid-template-columns: 28px 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
 .due-what { min-width: 0; }
 .due-what b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .due-list li:hover { border-color: var(--line-strong); }
@@ -146,7 +146,16 @@ button.kpi { cursor: pointer; }
 .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .pill.test { background: var(--due-bg); color: var(--due-fg); }
 .pill.due { background: var(--due-bg); color: var(--due-fg); }
-.pill.past { background: var(--moved-bg); color: var(--past-fg); }
+.pill.done { background: var(--moved-bg); color: var(--past-fg); }
+.pill.overdue { background: transparent; color: var(--soon-fg); border: 1px solid currentColor; }
+.k-red { color: var(--soon-fg); font-weight: 600; }
+
+/* checkbox เก็บตัวอย่าง */
+.sck { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 28px; cursor: pointer; flex: none; }
+.sck input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary); }
+.due-list li.overdue .due-date b { color: var(--soon-fg); }
+.due-list li.overdue .due-date small { color: var(--soon-fg); }
+.due-list li.due { border-color: color-mix(in srgb, var(--due-fg) 35%, var(--line)); }
 
 /* ---------- filters ---------- */
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -181,7 +190,8 @@ button.kpi { cursor: pointer; }
 .grid th.sh { line-height: 1.2; }
 .grid th.sh small, .grid td.s-date small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
 .grid td.s-date.due small { color: var(--due-fg); }
-.grid td.s-date.past small { color: var(--past-fg); }
+.grid td.s-date.done small, .grid td.s-date.overdue small { color: inherit; opacity: .85; }
+.grid td.s-date .s-wrap { display: flex; align-items: center; gap: 6px; }
 .grid td.move b { font-weight: 600; }
 .grid td.left { font-weight: 600; }
 .grid tr.r-soon td.left { color: var(--soon-fg); }
@@ -193,7 +203,8 @@ button.kpi { cursor: pointer; }
 .age-ok { color: var(--age-ok) !important; font-weight: 600; }
 .s-age { color: var(--muted); }
 .s-date.due { background: var(--due-bg) !important; color: var(--due-fg) !important; font-weight: 600; }
-.s-date.past { color: var(--past-fg) !important; }
+.s-date.done { color: var(--past-fg) !important; background: var(--surface-2) !important; }
+.s-date.overdue { color: var(--soon-fg) !important; font-weight: 600; }
 td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--issue-bg); color: var(--issue-fg); font-size: 12.5px; }
 
 .status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
@@ -217,13 +228,19 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 .card dt { font-size: 12px; color: var(--muted); }
 .card dd { margin: 0; }
 .card dd small { display: block; font-size: 12px; color: var(--muted); }
-.samples { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.samples { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: 1fr; gap: 4px; }
+.samples li > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding-top: 3px; }
+.samples li > div span { min-width: 92px; }
 .samples li { padding: 6px 8px; border-radius: 8px; background: var(--surface-2); font-size: 13px; }
-.samples li span { display: block; font-size: 11.5px; color: var(--muted); }
-.samples li small { display: block; font-size: 11px; color: var(--muted); }
+.samples li span { font-size: 12.5px; color: var(--muted); }
+.samples li small { font-size: 12px; color: var(--muted); }
 .samples li.due { background: var(--due-bg); color: var(--due-fg); }
 .samples li.due span, .samples li.due small { color: var(--due-fg); }
-.samples li.past { color: var(--past-fg); }
+.samples li.done { color: var(--past-fg); }
+.samples li.done span, .samples li.done small { color: var(--past-fg); }
+.samples li.overdue b, .samples li.overdue span { color: var(--soon-fg); }
+.samples li { display: flex; gap: 4px; align-items: flex-start; }
+.samples li .sck { min-width: 28px; min-height: 28px; }
 .issue-line { margin: 10px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--issue-bg); color: var(--issue-fg); font-size: 13px; }
 .empty { text-align: center; color: var(--muted); padding: 24px; margin: 0; }
 
@@ -254,7 +271,8 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 .pv-grid .age-ok b { color: var(--age-ok); }
 .pv-grid .s-date.due { background: var(--due-bg); }
 .pv-grid .s-date.due b { color: var(--due-fg); }
-.pv-grid .s-date.past b { color: var(--past-fg); }
+.pv-grid .s-date.done b { color: var(--past-fg); }
+.pv-grid .s-date.overdue b { color: var(--soon-fg); }
 .dlg-foot { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
 .spacer { flex: 1; }
 
@@ -278,9 +296,9 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
   .filters { width: 100%; }
   .filters input[type="search"] { flex: 1 1 100%; min-width: 0; }
   .due-list { grid-template-columns: 1fr; }
-  .due-list li { grid-template-columns: minmax(0, 1fr) auto; }
-  .due-list .due-what { grid-column: 1 / -1; grid-row: 2; }
-  .due-list .pill { grid-column: 2; grid-row: 1; justify-self: end; }
+  .due-list li { grid-template-columns: 28px minmax(0, 1fr) auto; }
+  .due-list .due-what { grid-column: 2 / -1; grid-row: 2; }
+  .due-list .pill { grid-column: 3; grid-row: 1; justify-self: end; }
   .form-grid, .pv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dlg form { padding: 16px; }
 }
@@ -326,7 +344,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 
     <section class="panel" id="duePanel" aria-labelledby="dueTitle">
       <div class="panel-head">
-        <h2 id="dueTitle">งานเก็บตัวอย่าง 7 วันข้างหน้า</h2>
+        <h2 id="dueTitle">งานเก็บตัวอย่าง <span class="muted small">ค้างเก็บ + 7 วันข้างหน้า · ติ๊กเมื่อเก็บแล้ว</span></h2>
         <span class="muted" id="dueRange"></span>
       </div>
       <ul class="due-list" id="dueList"></ul>
@@ -386,7 +404,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
         <li><b>อายุ (วัน)</b> = วันที่อ้างอิง − วันเริ่มเลี้ยง · <b>สัปดาห์-วัน</b> เช่น 18-6 = 18 สัปดาห์ 6 วัน (ตัวเลขสีเขียวเมื่ออายุ ≥ 105 วัน)</li>
         <li><b>ครบ 105 วัน</b> = วันเริ่มเลี้ยง + 105 วัน · <b>อายุวันย้าย</b> = วันย้าย − วันเริ่มเลี้ยง · <b>เหลืออีก</b> = วันย้าย − วันที่อ้างอิง</li>
         <li><b>สถานะ</b>: ไม่มีวันย้าย → รอกำหนดวันย้าย · เลยวันย้าย → ย้ายแล้ว · เหลือ ≤ 7 วัน → ใกล้ย้าย · นอกนั้น → ปกติ</li>
-        <li><b>แผนเก็บตัวอย่าง</b> ย้อนหลังจากวันย้าย: 17 วัน (TITER + PCR), 10 วัน (TITER + PCR), 3 วัน (PCR) — วันที่ถึงกำหนดภายใน 7 วัน <span class="pill due">ไฮไลต์เหลือง</span> ที่เลยแล้ว <span class="pill past">สีเทา</span></li>
+        <li><b>แผนเก็บตัวอย่าง</b> ย้อนหลังจากวันย้าย: 17 วัน (TITER + PCR), 10 วัน (TITER + PCR), 3 วัน (PCR) — ติ๊ก ☑ เมื่อเก็บแล้ว <span class="pill done">สีเทา</span> · ถึงกำหนดภายใน 7 วัน <span class="pill due">ไฮไลต์เหลือง</span> · เลยวันแต่ยังไม่ติ๊ก <span class="pill overdue">ตัวแดง</span></li>
         <li><b>ตรวจสอบ</b>: ยังไม่กรอกวันเริ่มเลี้ยง / วันเริ่มเลี้ยงในอนาคต / ยังไม่กรอกจำนวนไก่ / โรงเรือนซ้ำ / อายุ ≥ 91 วันแต่ยังไม่กำหนดวันย้าย / วันย้ายก่อนวันเริ่มเลี้ยง / ย้ายก่อนครบ 105 วัน / อายุวันย้ายเกิน 125 วัน</li>
       </ul>
     </details>
@@ -524,17 +542,22 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     }
 
     // แผนเก็บตัวอย่างย้อนหลังจากวันย้าย
+    // state: 'done' = ติ๊กว่าเก็บแล้ว (สีเทา) · 'overdue' = เลยวันแต่ยังไม่เก็บ (ตัวแดง)
+    //        'due' = ถึงกำหนดภายใน 7 วัน (ไฮไลต์เหลือง) · '' = ยังไม่ถึง
+    var done = f.done || {};
     r.samples = SAMPLE_PLAN.map(function (p) {
       var date = move === null ? null : move - p.days;
+      var isDone = !!done[p.days];
       var state = '';
       if (date !== null) {
-        if (date < ref) state = 'past';
+        if (isDone) state = 'done';
+        else if (date < ref) state = 'overdue';
         else if (date <= ref + SAMPLE_WINDOW) state = 'due';
       }
       return {
         days: p.days, test: p.test,
         age: r.moveAge === null ? null : r.moveAge - p.days,
-        date: date, state: state
+        date: date, state: state, done: isDone
       };
     });
 
@@ -674,6 +697,13 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     return res.json();
   }
 
+  /* สถานะการเก็บตัวอย่าง: { "17": true, "10": true, "3": true } */
+  function normDone(x) {
+    var o = {};
+    [17, 10, 3].forEach(function (n) { if (x && x[n]) o[n] = true; });
+    return o;
+  }
+
   function normalize(d) {
     if (Array.isArray(d)) d = { flocks: d };
     d = d || {};
@@ -685,14 +715,15 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
         vendor: String(f.vendor == null ? '' : f.vendor).trim(), house: String(f.house || '').trim(),
         batch: String(f.batch == null ? '' : f.batch).trim(),
         count: f.count === '' || f.count == null ? null : Number(f.count),
-        start: f.start || '', move: f.move || ''
+        start: f.start || '', move: f.move || '',
+        done: normDone(f.done)
       };
     });
     return d;
   }
 
   /* ---------- Claude Artifact db (ใช้เมื่อเปิดแอปเป็น Artifact บน claude.ai) ---------- */
-  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move'];
+  var FIELDS = ['group', 'farm', 'vendor', 'house', 'batch', 'count', 'start', 'move', 'done'];
   var dbPromise = null, db = null, dbUnsub = null, dbLast = {}, remoteCb = null;
 
   function getDb() {
@@ -703,7 +734,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     }
     return dbPromise;
   }
-  function pick(f) { var o = {}; FIELDS.forEach(function (k) { o[k] = f[k] == null ? null : f[k]; }); return o; }
+  function pick(f) { var o = {}; FIELDS.forEach(function (k) { o[k] = f[k] == null ? null : f[k]; }); o.done = normDone(f.done); return o; }
   function same(a, b) { return JSON.stringify(pick(a)) === JSON.stringify(pick(b)); }
 
   function dbLoad() {
@@ -849,10 +880,10 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 
     txt('A4', 'ข้อมูลฝูงไก่สาว'); txt('G4', 'อายุปัจจุบัน'); txt('J4', 'แผนย้าย / จับ');
     txt('N4', 'ก่อนจับ 17 วัน (TITER + PCR)'); txt('P4', 'ก่อนจับ 10 วัน (TITER + PCR)');
-    txt('R4', 'ก่อนจับ 3 วัน (PCR)'); txt('T4', 'ตรวจสอบ');
+    txt('R4', 'ก่อนจับ 3 วัน (PCR)'); txt('T4', 'ตรวจสอบ'); txt('U4', 'เก็บตัวอย่างแล้ว');
     ['ฟาร์ม', 'Vendor', 'โรงเรือน', 'รุ่น', 'จำนวนไก่ (ตัว)', 'วันเริ่มเลี้ยง', 'อายุ (วัน)', 'อายุ (สัปดาห์-วัน)',
       'ครบ 105 วัน', 'วันย้าย', 'อายุวันย้าย', 'เหลืออีก (วัน)', 'สถานะ', 'อายุ', 'วันที่เก็บ', 'อายุ', 'วันที่เก็บ',
-      'อายุ', 'วันที่เก็บ', 'ข้อมูลผิดปกติ'].forEach(function (h, i) { txt(XLSX.utils.encode_cell({ r: 4, c: i }), h); });
+      'อายุ', 'วันที่เก็บ', 'ข้อมูลผิดปกติ', '17 วัน', '10 วัน', '3 วัน'].forEach(function (h, i) { txt(XLSX.utils.encode_cell({ r: 4, c: i }), h); });
 
     flocks.forEach(function (fl, i) {
       var r = first + i, c = C.compute(fl, refISO, flocks);
@@ -875,6 +906,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
         f(p[0] + r, 'IF($K' + r + '="","",$K' + r + '-' + p[2] + ')', s.age);
         f(p[1] + r, 'IF($J' + r + '="","",$J' + r + '-' + p[2] + ')', serial(s.date), DATE_FMT);
       });
+      [['U', 17], ['V', 10], ['W', 3]].forEach(function (p) { if (fl.done && fl.done[p[1]]) txt(p[0] + r, '✓'); });
       var rng = '$A$' + first + ':$A$' + Math.max(last, 60) + ',$A' + r + ',$C$' + first + ':$C$' + Math.max(last, 60) + ',$C' + r;
       f('T' + r,
         'IF(OR($A' + r + '="",$C' + r + '=""),"",IF($F' + r + '="","ยังไม่กรอกวันเริ่มเลี้ยง",IF(NOT(ISNUMBER($F' + r + ')),"วันเริ่มเลี้ยงไม่ใช่วันที่",' +
@@ -889,13 +921,14 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     var sum = flocks.reduce(function (a, x) { return a + (Number(x.count) || 0); }, 0);
     put('E' + tot, { t: 'n', f: flocks.length ? 'SUM(E' + first + ':E' + last + ')' : '0', v: sum, z: '#,##0' });
 
-    ws['!ref'] = 'A1:T' + tot;
+    ws['!ref'] = 'A1:W' + tot;
     ws['!merges'] = [
       { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }, { s: { r: 3, c: 6 }, e: { r: 3, c: 8 } },
       { s: { r: 3, c: 9 }, e: { r: 3, c: 12 } }, { s: { r: 3, c: 13 }, e: { r: 3, c: 14 } },
-      { s: { r: 3, c: 15 }, e: { r: 3, c: 16 } }, { s: { r: 3, c: 17 }, e: { r: 3, c: 18 } }
+      { s: { r: 3, c: 15 }, e: { r: 3, c: 16 } }, { s: { r: 3, c: 17 }, e: { r: 3, c: 18 } },
+      { s: { r: 3, c: 20 }, e: { r: 3, c: 22 } }
     ];
-    ws['!cols'] = [24, 12, 9, 6, 12, 11, 9, 11, 11, 11, 10, 10, 15, 6, 11, 6, 11, 6, 11, 34].map(function (w) { return { wch: w }; });
+    ws['!cols'] = [24, 12, 9, 6, 12, 11, 9, 11, 11, 11, 10, 10, 15, 6, 11, 6, 11, 6, 11, 34, 7, 7, 7].map(function (w) { return { wch: w }; });
     return ws;
   }
 
@@ -1023,8 +1056,11 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     var active = scope.filter(function (r) { return r.c.status !== 'ย้ายแล้ว'; });
     var birds = active.reduce(function (a, r) { return a + (Number(r.f.count) || 0); }, 0);
     var soon = scope.filter(function (r) { return r.c.status === 'ใกล้ย้าย'; }).length;
-    var due = 0;
-    scope.forEach(function (r) { r.c.samples.forEach(function (s) { if (s.state === 'due') due++; }); });
+    var due = 0, overdue = 0;
+    scope.forEach(function (r) {
+      if (r.c.status === 'ย้ายแล้ว') return;
+      r.c.samples.forEach(function (s) { if (s.state === 'due') due++; if (s.state === 'overdue') overdue++; });
+    });
     var issues = scope.filter(function (r) { return r.c.issue; }).length;
     var next = active.filter(function (r) { return r.c.left !== null; })[0];
     var k = [
@@ -1032,7 +1068,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
       { label: 'ไก่รวม (ตัว)', value: fmtNum(birds), note: 'เฉพาะฝูงที่ยังไม่ย้าย' },
       { label: 'ย้ายครั้งถัดไป', value: next ? fmtISO(next.f.move) : '—', note: next ? esc(next.f.farm + ' ' + next.f.house) + ' · อีก ' + next.c.left + ' วัน' : 'ยังไม่มีวันย้าย', tone: next && next.c.left <= 7 ? 'soon' : '' },
       { label: 'ใกล้ย้าย (≤ 7 วัน)', value: soon, tone: soon ? 'soon' : '' },
-      { label: 'เก็บตัวอย่าง 7 วันนี้', value: due, note: 'ครั้ง', tone: due ? 'due' : '' },
+      { label: 'ต้องเก็บตัวอย่าง 7 วันนี้', value: due, note: overdue ? '<span class="k-red">ค้างเก็บ (เลยวัน) ' + overdue + ' ครั้ง</span>' : 'ครั้ง ที่ยังไม่ได้เก็บ', tone: due ? 'due' : '' },
       { label: 'ข้อมูลผิดปกติ', value: issues, tone: issues ? 'issue' : '', act: issues ? 'issue' : '' }
     ];
     $('#kpis').innerHTML = k.map(function (x) {
@@ -1046,19 +1082,21 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
   function renderDue(scope) {
     var ref = C.toDay(state.ref), items = [];
     scope.forEach(function (r) {
-      r.c.samples.forEach(function (s) { if (s.state === 'due') items.push({ r: r, s: s }); });
+      if (r.c.status === 'ย้ายแล้ว') return;
+      r.c.samples.forEach(function (s) { if (s.state === 'due' || s.state === 'overdue') items.push({ r: r, s: s }); });
     });
     items.sort(function (a, b) { return a.s.date - b.s.date || b.s.days - a.s.days; });
     $('#dueRange').textContent = fmtDay(ref) + ' – ' + fmtDay(ref + C.SAMPLE_WINDOW);
     $('#dueList').innerHTML = items.length ? items.map(function (it) {
       var d = it.s.date - ref;
-      var when = d === 0 ? 'วันนี้' : d === 1 ? 'พรุ่งนี้' : 'อีก ' + d + ' วัน';
-      return '<li data-id="' + esc(it.r.f.id) + '" tabindex="0">' +
+      var when = d === 0 ? 'วันนี้' : d === 1 ? 'พรุ่งนี้' : d < 0 ? 'เลยมา ' + (-d) + ' วัน' : 'อีก ' + d + ' วัน';
+      return '<li data-id="' + esc(it.r.f.id) + '" class="' + it.s.state + '" tabindex="0">' +
+        sampleBox(it.r.f, it.s) +
         '<span class="due-date"><b>' + fmtDay(it.s.date) + '</b><small>' + weekday(it.s.date) + ' · ' + when + '</small></span>' +
         '<span class="due-what"><b>' + esc(it.r.f.farm) + ' · ' + esc(it.r.f.house) + '</b><small>ก่อนจับ ' + it.s.days + ' วัน · อายุ ' + nz(it.s.age) + ' วัน · ' + esc(it.r.f.group) + '</small></span>' +
         '<span class="pill test">' + it.s.test + '</span>' +
         '</li>';
-    }).join('') : '<li class="none">ไม่มีกำหนดเก็บตัวอย่างใน 7 วันข้างหน้า</li>';
+    }).join('') : '<li class="none">ไม่มีตัวอย่างที่ต้องเก็บใน 7 วันข้างหน้า และไม่มีค้างเก็บ</li>';
   }
 
   function renderSeg() {
@@ -1070,9 +1108,18 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     }).join('');
   }
 
-  function sampleCells(c) {
+  /* checkbox เก็บตัวอย่างแล้ว */
+  function sampleBox(f, s) {
+    if (s.date === null) return '';
+    return '<label class="sck" title="ติ๊กเมื่อเก็บตัวอย่างแล้ว"><input type="checkbox" data-sample="' + esc(f.id) + '|' + s.days + '"' +
+      (s.done ? ' checked' : '') + ' aria-label="เก็บตัวอย่างก่อนจับ ' + s.days + ' วันแล้ว"></label>';
+  }
+
+  function sampleCells(f, c) {
     return c.samples.map(function (s) {
-      return '<td class="s-date ' + s.state + '">' + (s.date !== null ? fmtDay(s.date) + '<small>อายุ ' + nz(s.age) + ' วัน</small>' : '') + '</td>';
+      if (s.date === null) return '<td class="s-date"></td>';
+      return '<td class="s-date ' + s.state + '"><div class="s-wrap">' + sampleBox(f, s) +
+        '<span>' + fmtDay(s.date) + '<small>' + (s.done ? 'เก็บแล้ว · ' : s.state === 'overdue' ? 'ยังไม่เก็บ · ' : '') + 'อายุ ' + nz(s.age) + ' วัน</small></span></div></td>';
     }).join('');
   }
 
@@ -1099,7 +1146,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
         '<td class="num">' + nz(c.moveAge) + '</td>' +
         '<td class="num left">' + nz(c.left) + '</td>' +
         '<td>' + (c.status ? '<span class="status ' + STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') + '</td>' +
-        sampleCells(c) +
+        sampleCells(f, c) +
         '<td class="issue">' + (c.issue ? '<span>' + esc(c.issue) + '</span>' : '') + '</td>' +
         '</tr>';
     }).join('');
@@ -1122,7 +1169,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
         '<div><dt>จำนวนไก่</dt><dd><b>' + (fmtNum(f.count) || '—') + '</b><small>เริ่ม ' + (fmtISO(f.start) || '—') + '</small></dd></div>' +
         '</dl>' +
         (f.move ? '<ul class="samples">' + c.samples.map(function (s) {
-          return '<li class="' + s.state + '"><span>−' + s.days + ' วัน</span><b>' + fmtDay(s.date) + '</b><small>' + s.test + ' · อายุ ' + nz(s.age) + '</small></li>';
+          return '<li class="' + s.state + '">' + sampleBox(f, s) + '<div><span>−' + s.days + ' วัน' + (s.done ? ' · เก็บแล้ว' : '') + '</span><b>' + fmtDay(s.date) + '</b><small>' + s.test + ' · อายุ ' + nz(s.age) + '</small></div></li>';
         }).join('') + '</ul>' : '') +
         (c.issue ? '<p class="issue-line">⚠ ' + esc(c.issue) + '</p>' : '') +
         '</article>';
@@ -1199,6 +1246,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
       msg = 'แก้ไข ' + v.farm + ' ' + v.house;
     } else {
       v.id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      v.done = {};
       state.data.flocks.push(v);
       msg = 'เพิ่ม ' + v.farm + ' ' + v.house;
     }
@@ -1301,6 +1349,7 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 
   document.addEventListener('click', async function (e) {
     var t = e.target;
+    if (t.closest('.sck')) return; // checkbox เก็บตัวอย่าง ไม่เปิดฟอร์มแก้ไข
     var row = t.closest('[data-id]');
     if (row && !t.closest('dialog')) { openEdit(row.dataset.id); return; }
     var g = t.closest('[data-group]');
@@ -1316,8 +1365,19 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     }
     if (!t.closest('.menu-wrap')) closeMenu();
   });
+  document.addEventListener('change', function (e) {
+    var cb = e.target.closest && e.target.closest('input[data-sample]');
+    if (!cb) return;
+    var parts = cb.dataset.sample.split('|'), days = parts[1];
+    var f = state.data.flocks.find(function (x) { return x.id === parts[0]; });
+    if (!f) return;
+    f.done = Object.assign({}, f.done);
+    if (cb.checked) f.done[days] = true; else delete f.done[days];
+    render();
+    persist((cb.checked ? 'เก็บตัวอย่างแล้ว' : 'ยกเลิกเก็บตัวอย่าง') + ' ก่อนจับ ' + days + ' วัน · ' + f.farm + ' ' + f.house);
+  });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target.matches('[data-id]')) openEdit(e.target.dataset.id);
+    if (e.key === 'Enter' && e.target.matches('[data-id]') && !e.target.closest('.sck')) openEdit(e.target.dataset.id);
   });
 
   function closeMenu() { $('#menu').hidden = true; $('#menuBtn').setAttribute('aria-expanded', 'false'); }

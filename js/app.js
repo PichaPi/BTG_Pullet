@@ -84,8 +84,11 @@
     var active = scope.filter(function (r) { return r.c.status !== 'ย้ายแล้ว'; });
     var birds = active.reduce(function (a, r) { return a + (Number(r.f.count) || 0); }, 0);
     var soon = scope.filter(function (r) { return r.c.status === 'ใกล้ย้าย'; }).length;
-    var due = 0;
-    scope.forEach(function (r) { r.c.samples.forEach(function (s) { if (s.state === 'due') due++; }); });
+    var due = 0, overdue = 0;
+    scope.forEach(function (r) {
+      if (r.c.status === 'ย้ายแล้ว') return;
+      r.c.samples.forEach(function (s) { if (s.state === 'due') due++; if (s.state === 'overdue') overdue++; });
+    });
     var issues = scope.filter(function (r) { return r.c.issue; }).length;
     var next = active.filter(function (r) { return r.c.left !== null; })[0];
     var k = [
@@ -93,7 +96,7 @@
       { label: 'ไก่รวม (ตัว)', value: fmtNum(birds), note: 'เฉพาะฝูงที่ยังไม่ย้าย' },
       { label: 'ย้ายครั้งถัดไป', value: next ? fmtISO(next.f.move) : '—', note: next ? esc(next.f.farm + ' ' + next.f.house) + ' · อีก ' + next.c.left + ' วัน' : 'ยังไม่มีวันย้าย', tone: next && next.c.left <= 7 ? 'soon' : '' },
       { label: 'ใกล้ย้าย (≤ 7 วัน)', value: soon, tone: soon ? 'soon' : '' },
-      { label: 'เก็บตัวอย่าง 7 วันนี้', value: due, note: 'ครั้ง', tone: due ? 'due' : '' },
+      { label: 'ต้องเก็บตัวอย่าง 7 วันนี้', value: due, note: overdue ? '<span class="k-red">ค้างเก็บ (เลยวัน) ' + overdue + ' ครั้ง</span>' : 'ครั้ง ที่ยังไม่ได้เก็บ', tone: due ? 'due' : '' },
       { label: 'ข้อมูลผิดปกติ', value: issues, tone: issues ? 'issue' : '', act: issues ? 'issue' : '' }
     ];
     $('#kpis').innerHTML = k.map(function (x) {
@@ -107,19 +110,21 @@
   function renderDue(scope) {
     var ref = C.toDay(state.ref), items = [];
     scope.forEach(function (r) {
-      r.c.samples.forEach(function (s) { if (s.state === 'due') items.push({ r: r, s: s }); });
+      if (r.c.status === 'ย้ายแล้ว') return;
+      r.c.samples.forEach(function (s) { if (s.state === 'due' || s.state === 'overdue') items.push({ r: r, s: s }); });
     });
     items.sort(function (a, b) { return a.s.date - b.s.date || b.s.days - a.s.days; });
     $('#dueRange').textContent = fmtDay(ref) + ' – ' + fmtDay(ref + C.SAMPLE_WINDOW);
     $('#dueList').innerHTML = items.length ? items.map(function (it) {
       var d = it.s.date - ref;
-      var when = d === 0 ? 'วันนี้' : d === 1 ? 'พรุ่งนี้' : 'อีก ' + d + ' วัน';
-      return '<li data-id="' + esc(it.r.f.id) + '" tabindex="0">' +
+      var when = d === 0 ? 'วันนี้' : d === 1 ? 'พรุ่งนี้' : d < 0 ? 'เลยมา ' + (-d) + ' วัน' : 'อีก ' + d + ' วัน';
+      return '<li data-id="' + esc(it.r.f.id) + '" class="' + it.s.state + '" tabindex="0">' +
+        sampleBox(it.r.f, it.s) +
         '<span class="due-date"><b>' + fmtDay(it.s.date) + '</b><small>' + weekday(it.s.date) + ' · ' + when + '</small></span>' +
         '<span class="due-what"><b>' + esc(it.r.f.farm) + ' · ' + esc(it.r.f.house) + '</b><small>ก่อนจับ ' + it.s.days + ' วัน · อายุ ' + nz(it.s.age) + ' วัน · ' + esc(it.r.f.group) + '</small></span>' +
         '<span class="pill test">' + it.s.test + '</span>' +
         '</li>';
-    }).join('') : '<li class="none">ไม่มีกำหนดเก็บตัวอย่างใน 7 วันข้างหน้า</li>';
+    }).join('') : '<li class="none">ไม่มีตัวอย่างที่ต้องเก็บใน 7 วันข้างหน้า และไม่มีค้างเก็บ</li>';
   }
 
   function renderSeg() {
@@ -131,9 +136,18 @@
     }).join('');
   }
 
-  function sampleCells(c) {
+  /* checkbox เก็บตัวอย่างแล้ว */
+  function sampleBox(f, s) {
+    if (s.date === null) return '';
+    return '<label class="sck" title="ติ๊กเมื่อเก็บตัวอย่างแล้ว"><input type="checkbox" data-sample="' + esc(f.id) + '|' + s.days + '"' +
+      (s.done ? ' checked' : '') + ' aria-label="เก็บตัวอย่างก่อนจับ ' + s.days + ' วันแล้ว"></label>';
+  }
+
+  function sampleCells(f, c) {
     return c.samples.map(function (s) {
-      return '<td class="s-date ' + s.state + '">' + (s.date !== null ? fmtDay(s.date) + '<small>อายุ ' + nz(s.age) + ' วัน</small>' : '') + '</td>';
+      if (s.date === null) return '<td class="s-date"></td>';
+      return '<td class="s-date ' + s.state + '"><div class="s-wrap">' + sampleBox(f, s) +
+        '<span>' + fmtDay(s.date) + '<small>' + (s.done ? 'เก็บแล้ว · ' : s.state === 'overdue' ? 'ยังไม่เก็บ · ' : '') + 'อายุ ' + nz(s.age) + ' วัน</small></span></div></td>';
     }).join('');
   }
 
@@ -160,7 +174,7 @@
         '<td class="num">' + nz(c.moveAge) + '</td>' +
         '<td class="num left">' + nz(c.left) + '</td>' +
         '<td>' + (c.status ? '<span class="status ' + STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') + '</td>' +
-        sampleCells(c) +
+        sampleCells(f, c) +
         '<td class="issue">' + (c.issue ? '<span>' + esc(c.issue) + '</span>' : '') + '</td>' +
         '</tr>';
     }).join('');
@@ -183,7 +197,7 @@
         '<div><dt>จำนวนไก่</dt><dd><b>' + (fmtNum(f.count) || '—') + '</b><small>เริ่ม ' + (fmtISO(f.start) || '—') + '</small></dd></div>' +
         '</dl>' +
         (f.move ? '<ul class="samples">' + c.samples.map(function (s) {
-          return '<li class="' + s.state + '"><span>−' + s.days + ' วัน</span><b>' + fmtDay(s.date) + '</b><small>' + s.test + ' · อายุ ' + nz(s.age) + '</small></li>';
+          return '<li class="' + s.state + '">' + sampleBox(f, s) + '<div><span>−' + s.days + ' วัน' + (s.done ? ' · เก็บแล้ว' : '') + '</span><b>' + fmtDay(s.date) + '</b><small>' + s.test + ' · อายุ ' + nz(s.age) + '</small></div></li>';
         }).join('') + '</ul>' : '') +
         (c.issue ? '<p class="issue-line">⚠ ' + esc(c.issue) + '</p>' : '') +
         '</article>';
@@ -260,6 +274,7 @@
       msg = 'แก้ไข ' + v.farm + ' ' + v.house;
     } else {
       v.id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      v.done = {};
       state.data.flocks.push(v);
       msg = 'เพิ่ม ' + v.farm + ' ' + v.house;
     }
@@ -362,6 +377,7 @@
 
   document.addEventListener('click', async function (e) {
     var t = e.target;
+    if (t.closest('.sck')) return; // checkbox เก็บตัวอย่าง ไม่เปิดฟอร์มแก้ไข
     var row = t.closest('[data-id]');
     if (row && !t.closest('dialog')) { openEdit(row.dataset.id); return; }
     var g = t.closest('[data-group]');
@@ -377,8 +393,19 @@
     }
     if (!t.closest('.menu-wrap')) closeMenu();
   });
+  document.addEventListener('change', function (e) {
+    var cb = e.target.closest && e.target.closest('input[data-sample]');
+    if (!cb) return;
+    var parts = cb.dataset.sample.split('|'), days = parts[1];
+    var f = state.data.flocks.find(function (x) { return x.id === parts[0]; });
+    if (!f) return;
+    f.done = Object.assign({}, f.done);
+    if (cb.checked) f.done[days] = true; else delete f.done[days];
+    render();
+    persist((cb.checked ? 'เก็บตัวอย่างแล้ว' : 'ยกเลิกเก็บตัวอย่าง') + ' ก่อนจับ ' + days + ' วัน · ' + f.farm + ' ' + f.house);
+  });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target.matches('[data-id]')) openEdit(e.target.dataset.id);
+    if (e.key === 'Enter' && e.target.matches('[data-id]') && !e.target.closest('.sck')) openEdit(e.target.dataset.id);
   });
 
   function closeMenu() { $('#menu').hidden = true; $('#menuBtn').setAttribute('aria-expanded', 'false'); }

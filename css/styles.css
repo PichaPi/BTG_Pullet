@@ -121,7 +121,7 @@ button.kpi { cursor: pointer; }
 
 /* ---------- due list ---------- */
 .due-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 8px; }
-.due-list li { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
+.due-list li { display: grid; grid-template-columns: 28px 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; }
 .due-what { min-width: 0; }
 .due-what b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .due-list li:hover { border-color: var(--line-strong); }
@@ -134,7 +134,16 @@ button.kpi { cursor: pointer; }
 .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .pill.test { background: var(--due-bg); color: var(--due-fg); }
 .pill.due { background: var(--due-bg); color: var(--due-fg); }
-.pill.past { background: var(--moved-bg); color: var(--past-fg); }
+.pill.done { background: var(--moved-bg); color: var(--past-fg); }
+.pill.overdue { background: transparent; color: var(--soon-fg); border: 1px solid currentColor; }
+.k-red { color: var(--soon-fg); font-weight: 600; }
+
+/* checkbox เก็บตัวอย่าง */
+.sck { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 28px; cursor: pointer; flex: none; }
+.sck input { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary); }
+.due-list li.overdue .due-date b { color: var(--soon-fg); }
+.due-list li.overdue .due-date small { color: var(--soon-fg); }
+.due-list li.due { border-color: color-mix(in srgb, var(--due-fg) 35%, var(--line)); }
 
 /* ---------- filters ---------- */
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -169,7 +178,8 @@ button.kpi { cursor: pointer; }
 .grid th.sh { line-height: 1.2; }
 .grid th.sh small, .grid td.s-date small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
 .grid td.s-date.due small { color: var(--due-fg); }
-.grid td.s-date.past small { color: var(--past-fg); }
+.grid td.s-date.done small, .grid td.s-date.overdue small { color: inherit; opacity: .85; }
+.grid td.s-date .s-wrap { display: flex; align-items: center; gap: 6px; }
 .grid td.move b { font-weight: 600; }
 .grid td.left { font-weight: 600; }
 .grid tr.r-soon td.left { color: var(--soon-fg); }
@@ -181,7 +191,8 @@ button.kpi { cursor: pointer; }
 .age-ok { color: var(--age-ok) !important; font-weight: 600; }
 .s-age { color: var(--muted); }
 .s-date.due { background: var(--due-bg) !important; color: var(--due-fg) !important; font-weight: 600; }
-.s-date.past { color: var(--past-fg) !important; }
+.s-date.done { color: var(--past-fg) !important; background: var(--surface-2) !important; }
+.s-date.overdue { color: var(--soon-fg) !important; font-weight: 600; }
 td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--issue-bg); color: var(--issue-fg); font-size: 12.5px; }
 
 .status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
@@ -205,13 +216,19 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 .card dt { font-size: 12px; color: var(--muted); }
 .card dd { margin: 0; }
 .card dd small { display: block; font-size: 12px; color: var(--muted); }
-.samples { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.samples { list-style: none; padding: 0; margin: 10px 0 0; display: grid; grid-template-columns: 1fr; gap: 4px; }
+.samples li > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding-top: 3px; }
+.samples li > div span { min-width: 92px; }
 .samples li { padding: 6px 8px; border-radius: 8px; background: var(--surface-2); font-size: 13px; }
-.samples li span { display: block; font-size: 11.5px; color: var(--muted); }
-.samples li small { display: block; font-size: 11px; color: var(--muted); }
+.samples li span { font-size: 12.5px; color: var(--muted); }
+.samples li small { font-size: 12px; color: var(--muted); }
 .samples li.due { background: var(--due-bg); color: var(--due-fg); }
 .samples li.due span, .samples li.due small { color: var(--due-fg); }
-.samples li.past { color: var(--past-fg); }
+.samples li.done { color: var(--past-fg); }
+.samples li.done span, .samples li.done small { color: var(--past-fg); }
+.samples li.overdue b, .samples li.overdue span { color: var(--soon-fg); }
+.samples li { display: flex; gap: 4px; align-items: flex-start; }
+.samples li .sck { min-width: 28px; min-height: 28px; }
 .issue-line { margin: 10px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--issue-bg); color: var(--issue-fg); font-size: 13px; }
 .empty { text-align: center; color: var(--muted); padding: 24px; margin: 0; }
 
@@ -242,7 +259,8 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 .pv-grid .age-ok b { color: var(--age-ok); }
 .pv-grid .s-date.due { background: var(--due-bg); }
 .pv-grid .s-date.due b { color: var(--due-fg); }
-.pv-grid .s-date.past b { color: var(--past-fg); }
+.pv-grid .s-date.done b { color: var(--past-fg); }
+.pv-grid .s-date.overdue b { color: var(--soon-fg); }
 .dlg-foot { display: flex; gap: 8px; align-items: center; margin-top: 18px; }
 .spacer { flex: 1; }
 
@@ -266,9 +284,9 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
   .filters { width: 100%; }
   .filters input[type="search"] { flex: 1 1 100%; min-width: 0; }
   .due-list { grid-template-columns: 1fr; }
-  .due-list li { grid-template-columns: minmax(0, 1fr) auto; }
-  .due-list .due-what { grid-column: 1 / -1; grid-row: 2; }
-  .due-list .pill { grid-column: 2; grid-row: 1; justify-self: end; }
+  .due-list li { grid-template-columns: 28px minmax(0, 1fr) auto; }
+  .due-list .due-what { grid-column: 2 / -1; grid-row: 2; }
+  .due-list .pill { grid-column: 3; grid-row: 1; justify-self: end; }
   .form-grid, .pv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dlg form { padding: 16px; }
 }
