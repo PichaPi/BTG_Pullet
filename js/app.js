@@ -14,7 +14,8 @@
     q: '',
     showMoved: true,
     onlyIssue: false,
-    editing: null
+    editing: null,
+    view: location.hash === '#summary' ? 'summary' : 'table'
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(LS_UI)) || {}); } catch (e) { /* ignore */ }
   state.ref = C.todayISO(); // วันที่อ้างอิงเริ่มที่วันนี้เสมอ (เหมือน =TODAY())
@@ -69,10 +70,22 @@
     renderKpis(scope);
     renderDue(scope);
     renderSeg();
+    renderView(scope);
     renderTable(list);
     renderCards(list);
     $('#empty').hidden = list.length > 0;
     $('#empty').textContent = state.data.flocks.length ? 'ไม่พบฝูงตามเงื่อนไขที่เลือก' : 'ยังไม่มีข้อมูล — กด “+ เพิ่มฝูง” เพื่อเริ่ม';
+  }
+
+  function renderView(scope) {
+    var sum = state.view === 'summary';
+    document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.view === state.view)); });
+    $('#duePanel').hidden = sum; $('#listPanel').hidden = sum; $('#summary').hidden = !sum;
+    if (sum) {
+      $('#summary').innerHTML = window.PulletSummary.render(scope, {
+        esc: esc, fmtDay: fmtDay, fmtNum: fmtNum, STATUS_CLS: STATUS_CLS, ref: state.ref
+      });
+    }
   }
 
   function renderRef() {
@@ -380,9 +393,15 @@
     if (t.closest('.sck')) return; // checkbox เก็บตัวอย่าง ไม่เปิดฟอร์มแก้ไข
     var row = t.closest('[data-id]');
     if (row && !t.closest('dialog')) { openEdit(row.dataset.id); return; }
+    var vb = t.closest('[data-view]');
+    if (vb) {
+      state.view = vb.dataset.view;
+      try { history.replaceState(null, '', state.view === 'summary' ? '#summary' : location.pathname + location.search); } catch (er) { /* ignore */ }
+      render(); window.scrollTo(0, 0); return;
+    }
     var g = t.closest('[data-group]');
     if (g) { state.group = g.dataset.group; saveUI(); render(); return; }
-    if (t.closest('[data-kpi="issue"]')) { state.onlyIssue = true; $('#onlyIssue').checked = true; saveUI(); render(); document.getElementById('listTitle').scrollIntoView({ behavior: 'smooth' }); return; }
+    if (t.closest('[data-kpi="issue"]')) { state.view = 'table'; state.onlyIssue = true; $('#onlyIssue').checked = true; saveUI(); render(); document.getElementById('listTitle').scrollIntoView({ behavior: 'smooth' }); return; }
     var bAct = t.closest('[data-banner]');
     if (bAct) {
       var a = bAct.dataset.banner;

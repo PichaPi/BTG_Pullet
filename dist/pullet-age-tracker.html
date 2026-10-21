@@ -286,9 +286,74 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 10px; background: var(--text); color: var(--bg); font-size: 14px; box-shadow: var(--shadow); z-index: 50; }
 
+/* ---------- view bar ---------- */
+.viewbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.tabs { display: inline-flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; background: none; padding: 8px 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ---------- summary ---------- */
+.sum-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.sum-grid[hidden] { display: none; }
+.sum-wide { grid-column: 1 / -1; }
+.sum-table-wrap { overflow-x: auto; }
+.sum-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.sum-table th, .sum-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.sum-table thead th { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.sum-table tbody th { font-weight: 600; }
+.sum-table .num { text-align: right; }
+.sum-table small { color: var(--muted); font-size: 12px; }
+.sum-table tfoot td, .sum-table tfoot th { font-weight: 700; background: var(--surface-2); border-bottom: 0; }
+.sum-foot { margin: 8px 0 0; }
+
+.hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.hbars li { display: grid; grid-template-columns: 120px minmax(0, 1fr) 96px; gap: 4px 12px; align-items: center; }
+.hb-label { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.hb-label small, .hb-val small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
+.hb-track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.hb-fill { display: block; height: 100%; background: var(--primary); border-radius: 0 4px 4px 0; }
+.hb-val { text-align: right; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.hb-chips { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.chip:hover { border-color: var(--line-strong); color: var(--text); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; }
+.lg-fill { width: 18px; height: 8px; border-radius: 2px; background: var(--primary); }
+.lg-105 { width: 2px; height: 14px; background: var(--accent); }
+.lg-move { width: 8px; height: 8px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--surface); }
+
+.farm-block { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.farm-block + .farm-block { margin-top: 10px; }
+.farm-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.farm-head b { font-size: 15px; }
+.farm-stats { margin-left: auto; display: flex; gap: 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hrow { display: grid; grid-template-columns: 90px 80px 96px minmax(160px, 1fr) 130px 104px 118px; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 14px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.hrow:last-child { border-bottom: 0; }
+.hrow:hover { background: var(--surface-2); }
+.hrow-head { font-size: 12px; color: var(--muted); font-weight: 600; cursor: default; padding-top: 6px; padding-bottom: 6px; }
+.hrow-head:hover { background: none; }
+.hrow small { display: block; font-size: 12px; color: var(--muted); }
+.hrow.pending { color: var(--muted); }
+.h-house { font-weight: 600; color: var(--primary); }
+.h-house small { font-weight: 400; }
+.h-age b { font-weight: 600; }
+.m-only { display: none !important; }
+.tl { position: relative; display: block; height: 10px; background: var(--surface-2); border-radius: 4px; border: 1px solid var(--line); }
+.tl-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--primary); border-radius: 3px; }
+.tl-105 { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--accent); }
+.tl-move { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--surface); }
+.h-dots { display: flex; gap: 4px; }
+.sdot { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 4px; border-radius: 6px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--line-strong); color: var(--muted); background: var(--surface); }
+.sdot.s-done { background: var(--moved-bg); color: var(--past-fg); border-color: transparent; }
+.sdot.s-due { background: var(--due-bg); color: var(--due-fg); border-color: transparent; }
+.sdot.s-overdue { color: var(--soon-fg); border-color: currentColor; }
+
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
   .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sum-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
   .topbar { padding: 10px 16px; position: static; }
@@ -309,6 +374,20 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
   .due-list .pill { grid-column: 3; grid-row: 1; justify-self: end; }
   .form-grid, .pv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dlg form { padding: 16px; }
+  .viewbar { flex-direction: column; align-items: stretch; }
+  .tabs button { flex: 1; }
+  .hbars li { grid-template-columns: 96px minmax(0, 1fr) 76px; gap: 4px 8px; }
+  .hb-chips { grid-column: 1 / -1; }
+  .farm-stats { margin-left: 0; width: 100%; }
+  .hrow-head { display: none; }
+  .hrow { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "house status" "age move" "bar bar" "start dots"; gap: 6px 10px; padding: 10px 12px; }
+  .h-house { grid-area: house; } .h-status { grid-area: status; justify-self: end; }
+  .h-age { grid-area: age; } .h-move { grid-area: move; text-align: right; }
+  .h-bar { grid-area: bar; } .h-start { grid-area: start; font-size: 13px; color: var(--muted); }
+  .h-dots { grid-area: dots; justify-self: end; }
+  .m-only { display: inline !important; }
+  .hrow.pending { grid-template-areas: "house status" "start move"; }
+  .hrow.pending .h-age, .hrow.pending .h-bar, .hrow.pending .h-dots { display: none; }
 }
 </style>
 </head>
@@ -348,6 +427,14 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
   <main>
     <div class="banner" id="banner" hidden></div>
 
+    <nav class="viewbar" aria-label="มุมมอง">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-view="table" aria-selected="true">ตารางฝูง</button>
+        <button type="button" role="tab" data-view="summary" aria-selected="false">Summary</button>
+      </div>
+      <div class="seg" id="groupSeg" role="tablist" aria-label="กลุ่ม"></div>
+    </nav>
+
     <section class="kpis" id="kpis" aria-label="สรุป"></section>
 
     <section class="panel" id="duePanel" aria-labelledby="dueTitle">
@@ -358,11 +445,10 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
       <ul class="due-list" id="dueList"></ul>
     </section>
 
-    <section class="panel" aria-labelledby="listTitle">
+    <section class="panel" id="listPanel" aria-labelledby="listTitle">
       <div class="panel-head wrap">
         <h2 id="listTitle">ฝูงไก่สาว <span class="muted small">เรียงตามวันย้ายที่ใกล้ที่สุด</span></h2>
         <div class="filters">
-          <div class="seg" id="groupSeg" role="tablist"></div>
           <input type="search" id="search" placeholder="ค้นหาฟาร์ม / โรงเรือน / Vendor">
           <label class="check"><input type="checkbox" id="showMoved" checked> แสดงที่ย้ายแล้ว</label>
           <label class="check"><input type="checkbox" id="onlyIssue"> เฉพาะข้อมูลผิดปกติ</label>
@@ -406,7 +492,9 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
       <p class="empty" id="empty" hidden>ไม่พบฝูงตามเงื่อนไขที่เลือก</p>
     </section>
 
-    <details class="panel notes">
+    <div class="sum-grid" id="summary" hidden></div>
+
+    <details class="panel notes" id="notesPanel">
       <summary>วิธีคำนวณ (เหมือนไฟล์ Excel เดิม)</summary>
       <ul>
         <li><b>อายุ (วัน)</b> = วันที่อ้างอิง − วันเริ่มเลี้ยง · <b>สัปดาห์-วัน</b> เช่น 18-6 = 18 สัปดาห์ 6 วัน (ตัวเลขสีเขียวเมื่ออายุ ≥ 105 วัน)</li>
@@ -978,6 +1066,163 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
 })(this);
 </script>
   <script>
+/* summary.js — หน้า Summary: ภาพรวมอายุไก่สาว รายกลุ่ม / รายฟาร์ม / แผนย้าย */
+(function (root) {
+  'use strict';
+
+  var C = root.PulletCalc;
+  var TH_MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  var BANDS = [
+    { label: '0–6 สัปดาห์', sub: '0–48 วัน', min: 0, max: 48 },
+    { label: '7–12 สัปดาห์', sub: '49–90 วัน', min: 49, max: 90 },
+    { label: '13–14 สัปดาห์', sub: '91–104 วัน', min: 91, max: 104 },
+    { label: '15 สัปดาห์ขึ้นไป', sub: '≥ 105 วัน', min: 105, max: Infinity }
+  ];
+
+  function sum(list, fn) { return list.reduce(function (a, x) { return a + (fn(x) || 0); }, 0); }
+  function birds(r) { return Number(r.f.count) || 0; }
+  /* อายุเฉลี่ยถ่วงด้วยจำนวนไก่ (ถ้าไม่มีจำนวนไก่ ใช้ค่าเฉลี่ยธรรมดา) */
+  function avgAge(list) {
+    if (!list.length) return null;
+    var w = sum(list, birds);
+    if (w > 0) return sum(list, function (r) { return r.c.age * birds(r); }) / w;
+    return sum(list, function (r) { return r.c.age; }) / list.length;
+  }
+  function wd(age) { return Math.floor(age / 7) + '-' + (((age % 7) + 7) % 7); }
+
+  function render(scope, h) {
+    var esc = h.esc, fmtDay = h.fmtDay, fmtNum = h.fmtNum;
+    var moved = scope.filter(function (r) { return r.c.status === 'ย้ายแล้ว'; });
+    var current = scope.filter(function (r) { return r.c.status !== 'ย้ายแล้ว'; });
+    var active = current.filter(function (r) { return r.c.age !== null; });
+    var pending = current.filter(function (r) { return r.c.age === null; });
+    var ref = C.toDay(h.ref);
+
+    var out = '';
+
+    /* ---------- 1) ภาพรวมรายกลุ่ม ---------- */
+    var gs = [];
+    current.forEach(function (r) { if (gs.indexOf(r.f.group) < 0) gs.push(r.f.group); });
+    function groupRow(name, list, cls) {
+      var act = list.filter(function (r) { return r.c.age !== null; });
+      var farms = {};
+      list.forEach(function (r) { farms[r.f.farm] = 1; });
+      var ages = act.map(function (r) { return r.c.age; });
+      var avg = avgAge(act);
+      return '<tr class="' + (cls || '') + '"><th scope="row">' + esc(name) + '</th>' +
+        '<td class="num">' + Object.keys(farms).length + '</td>' +
+        '<td class="num">' + act.length + '</td>' +
+        '<td class="num">' + fmtNum(sum(act, birds)) + '</td>' +
+        '<td class="num">' + (avg === null ? '—' : Math.round(avg) + ' <small>(' + wd(Math.round(avg)) + ')</small>') + '</td>' +
+        '<td class="num">' + (ages.length ? Math.min.apply(null, ages) + '–' + Math.max.apply(null, ages) : '—') + '</td>' +
+        '<td class="num">' + act.filter(function (r) { return r.c.age >= C.AGE_TARGET; }).length + '</td>' +
+        '<td class="num">' + (list.length - act.length) + '</td></tr>';
+    }
+    out += '<section class="panel sum-wide"><div class="panel-head"><h2>ภาพรวมรายกลุ่ม</h2>' +
+      '<span class="muted small">' + (moved.length ? 'ไม่นับ ' + moved.length + ' โรงเรือนที่ย้ายแล้ว' : 'ฝูงที่ยังไม่ย้ายทั้งหมด') + '</span></div>' +
+      '<div class="sum-table-wrap"><table class="sum-table"><thead><tr><th>กลุ่ม</th><th class="num">ฟาร์ม</th><th class="num">โรงเรือนที่เลี้ยงอยู่</th>' +
+      '<th class="num">ไก่รวม (ตัว)</th><th class="num">อายุเฉลี่ย (วัน)</th><th class="num">อายุ ต่ำสุด–สูงสุด</th><th class="num">ครบ 105 วันแล้ว</th><th class="num">รอลงเลี้ยง</th></tr></thead><tbody>' +
+      gs.map(function (g) { return groupRow(g, current.filter(function (r) { return r.f.group === g; })); }).join('') +
+      '</tbody>' + (gs.length > 1 ? '<tfoot>' + groupRow('รวมทั้งหมด', current, 'total') + '</tfoot>' : '') + '</table></div>' +
+      '<p class="muted small sum-foot">อายุเฉลี่ยถ่วงด้วยจำนวนไก่ · สัปดาห์-วันในวงเล็บ</p></section>';
+
+    /* ---------- 2) การกระจายอายุ ---------- */
+    var bandData = BANDS.map(function (b) {
+      var l = active.filter(function (r) { return r.c.age >= b.min && r.c.age <= b.max; });
+      return { b: b, houses: l.length, birds: sum(l, birds) };
+    });
+    var maxB = Math.max.apply(null, bandData.map(function (x) { return x.birds; }).concat([1]));
+    out += '<section class="panel"><div class="panel-head"><h2>การกระจายอายุ</h2><span class="muted small">จำนวนไก่ตามช่วงอายุ</span></div>' +
+      '<ul class="hbars">' + bandData.map(function (x) {
+        var w = x.birds ? Math.max(2, x.birds / maxB * 100) : 0;
+        return '<li title="' + esc(x.b.label + ' (' + x.b.sub + '): ' + x.houses + ' โรงเรือน · ' + fmtNum(x.birds) + ' ตัว') + '">' +
+          '<span class="hb-label">' + x.b.label + '<small>' + x.b.sub + '</small></span>' +
+          '<span class="hb-track"><span class="hb-fill" style="width:' + w.toFixed(1) + '%"></span></span>' +
+          '<span class="hb-val"><b>' + fmtNum(x.birds) + '</b><small>' + x.houses + ' โรงเรือน</small></span></li>';
+      }).join('') + '</ul></section>';
+
+    /* ---------- 3) แผนย้ายรายเดือน ---------- */
+    var months = {};
+    current.forEach(function (r) {
+      var m = C.toDay(r.f.move);
+      if (m === null || m < ref) return;
+      var d = new Date(m * 86400000), key = d.getUTCFullYear() * 100 + d.getUTCMonth();
+      (months[key] = months[key] || { y: d.getUTCFullYear(), m: d.getUTCMonth(), list: [] }).list.push(r);
+    });
+    var mk = Object.keys(months).sort();
+    var maxM = Math.max.apply(null, mk.map(function (k) { return sum(months[k].list, birds); }).concat([1]));
+    out += '<section class="panel"><div class="panel-head"><h2>แผนย้ายรายเดือน</h2><span class="muted small">ฝูงที่กำหนดวันย้ายแล้ว</span></div>' +
+      (mk.length ? '<ul class="hbars months">' + mk.map(function (k) {
+        var mo = months[k], b = sum(mo.list, birds);
+        mo.list.sort(function (a, c) { return C.toDay(a.f.move) - C.toDay(c.f.move); });
+        return '<li title="' + esc(TH_MON[mo.m] + ' ' + mo.y + ': ' + mo.list.length + ' โรงเรือน · ' + fmtNum(b) + ' ตัว') + '">' +
+          '<span class="hb-label">' + TH_MON[mo.m] + ' ' + String(mo.y).slice(2) + '<small>' + mo.list.length + ' โรงเรือน</small></span>' +
+          '<span class="hb-track"><span class="hb-fill" style="width:' + Math.max(2, b / maxM * 100).toFixed(1) + '%"></span></span>' +
+          '<span class="hb-val"><b>' + fmtNum(b) + '</b><small>ตัว</small></span>' +
+          '<span class="hb-chips">' + mo.list.map(function (r) {
+            return '<span class="chip" data-id="' + esc(r.f.id) + '">' + esc(r.f.farm) + ' ' + esc(r.f.house) + ' · ' + fmtDay(C.toDay(r.f.move)) + '</span>';
+          }).join('') + '</span></li>';
+      }).join('') + '</ul>' : '<p class="muted">ยังไม่มีฝูงที่กำหนดวันย้าย</p>') + '</section>';
+
+    /* ---------- 4) อายุปัจจุบันรายฟาร์ม / โรงเรือน ---------- */
+    var scale = Math.max(130, Math.max.apply(null, current.map(function (r) { return Math.max(r.c.moveAge || 0, r.c.age || 0); }).concat([0])) + 5);
+    var farms = [], fmap = {};
+    current.forEach(function (r) {   // current มาตามลำดับวันย้ายใกล้สุดแล้ว
+      var key = r.f.group + '|' + r.f.farm;
+      if (!fmap[key]) { fmap[key] = { group: r.f.group, farm: r.f.farm, vendor: r.f.vendor, list: [] }; farms.push(fmap[key]); }
+      fmap[key].list.push(r);
+    });
+    function pct(v) { return (Math.min(v, scale) / scale * 100).toFixed(1) + '%'; }
+    function dots(c) {
+      if (c.samples[0].date === null) return '<span class="muted">—</span>';
+      return c.samples.map(function (s) {
+        var t = 'ก่อนจับ ' + s.days + ' วัน · ' + fmtDay(s.date) + ' · ' +
+          (s.state === 'done' ? 'เก็บแล้ว' : s.state === 'overdue' ? 'เลยวัน ยังไม่เก็บ' : s.state === 'due' ? 'ถึงกำหนดใน 7 วัน' : 'ยังไม่ถึง');
+        return '<span class="sdot s-' + (s.state || 'later') + '" title="' + esc(t) + '">' + (s.state === 'done' ? '✓' : s.days) + '</span>';
+      }).join('');
+    }
+    out += '<section class="panel sum-wide"><div class="panel-head wrap"><h2>อายุปัจจุบันรายฟาร์ม</h2>' +
+      '<span class="legend"><span><i class="lg-fill"></i>อายุปัจจุบัน</span><span><i class="lg-105"></i>105 วัน</span><span><i class="lg-move"></i>อายุวันย้าย</span>' +
+      '<span><span class="sdot s-done">✓</span>เก็บแล้ว</span><span><span class="sdot s-due">10</span>ใน 7 วัน</span><span><span class="sdot s-overdue">17</span>เลยวัน</span></span></div>' +
+      farms.map(function (fm) {
+        var act = fm.list.filter(function (r) { return r.c.age !== null; });
+        fm.list.sort(function (a, b) { return String(a.f.house).localeCompare(String(b.f.house), 'th', { numeric: true }); });
+        return '<div class="farm-block"><div class="farm-head"><b>' + esc(fm.farm) + '</b>' +
+          '<span class="muted small">' + esc(fm.group) + (fm.vendor ? ' · ' + esc(fm.vendor) : '') + '</span>' +
+          '<span class="farm-stats"><span>' + fm.list.length + ' โรงเรือน</span><span>' + fmtNum(sum(act, birds)) + ' ตัว</span>' +
+          (act.length ? '<span>อายุเฉลี่ย ' + Math.round(avgAge(act)) + ' วัน</span>' : '') + '</span></div>' +
+          '<div class="hrow hrow-head" aria-hidden="true"><span>โรงเรือน</span><span>วันลงเลี้ยง</span><span>อายุ</span><span>อายุ 0 → ' + scale + ' วัน</span><span>วันย้าย</span><span>ตัวอย่าง</span><span>สถานะ</span></div>' +
+          fm.list.map(function (r) {
+            var f = r.f, c = r.c;
+            if (c.age === null) {
+              return '<div class="hrow pending" data-id="' + esc(f.id) + '" tabindex="0"><span class="h-house">' + esc(f.house) + '</span>' +
+                '<span class="h-start muted">ยังไม่ลงเลี้ยง</span><span class="h-age"></span><span class="h-bar"></span>' +
+                '<span class="h-move">' + (f.move ? fmtDay(C.toDay(f.move)) : '') + '</span><span class="h-dots"></span><span class="h-status"></span></div>';
+            }
+            var tip = 'อายุ ' + c.age + ' วัน (' + c.ageWD + ') · ครบ 105 วัน ' + fmtDay(c.d105) + (c.moveAge !== null ? ' · ย้ายที่อายุ ' + c.moveAge + ' วัน' : '');
+            return '<div class="hrow" data-id="' + esc(f.id) + '" tabindex="0">' +
+              '<span class="h-house">' + esc(f.house) + (f.count ? '<small>' + fmtNum(f.count) + ' ตัว</small>' : '') + '</span>' +
+              '<span class="h-start"><small class="m-only">ลงเลี้ยง </small>' + fmtDay(C.toDay(f.start)) + '</span>' +
+              '<span class="h-age"><b class="' + (c.age >= C.AGE_TARGET ? 'age-ok' : '') + '">' + c.age + ' วัน</b><small>' + c.ageWD + ' สัปดาห์</small></span>' +
+              '<span class="h-bar" title="' + esc(tip) + '"><span class="tl">' +
+                '<span class="tl-fill" style="width:' + pct(Math.max(c.age, 0)) + '"></span>' +
+                '<span class="tl-105" style="left:' + pct(C.AGE_TARGET) + '"></span>' +
+                (c.moveAge !== null ? '<span class="tl-move" style="left:' + pct(c.moveAge) + '"></span>' : '') +
+              '</span></span>' +
+              '<span class="h-move">' + (f.move ? '<b>' + fmtDay(C.toDay(f.move)) + '</b><small>' + (c.left >= 0 ? 'อีก ' + c.left + ' วัน' : '') + ' · อายุ ' + c.moveAge + '</small>' : '<span class="muted">ยังไม่กำหนด</span>') + '</span>' +
+              '<span class="h-dots">' + dots(c) + '</span>' +
+              '<span class="h-status">' + (c.status ? '<span class="status ' + h.STATUS_CLS[c.status] + '">' + c.status + '</span>' : '') + '</span>' +
+              '</div>';
+          }).join('') + '</div>';
+      }).join('') + (farms.length ? '' : '<p class="muted">ไม่มีฝูงที่เลี้ยงอยู่</p>') + '</section>';
+
+    return out;
+  }
+
+  root.PulletSummary = { render: render };
+})(this);
+</script>
+  <script>
 /* app.js — หน้าจอ, ตาราง, ฟอร์มเพิ่ม/แก้ไข */
 (function () {
   'use strict';
@@ -994,7 +1239,8 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     q: '',
     showMoved: true,
     onlyIssue: false,
-    editing: null
+    editing: null,
+    view: location.hash === '#summary' ? 'summary' : 'table'
   };
   try { Object.assign(state, JSON.parse(localStorage.getItem(LS_UI)) || {}); } catch (e) { /* ignore */ }
   state.ref = C.todayISO(); // วันที่อ้างอิงเริ่มที่วันนี้เสมอ (เหมือน =TODAY())
@@ -1049,10 +1295,22 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     renderKpis(scope);
     renderDue(scope);
     renderSeg();
+    renderView(scope);
     renderTable(list);
     renderCards(list);
     $('#empty').hidden = list.length > 0;
     $('#empty').textContent = state.data.flocks.length ? 'ไม่พบฝูงตามเงื่อนไขที่เลือก' : 'ยังไม่มีข้อมูล — กด “+ เพิ่มฝูง” เพื่อเริ่ม';
+  }
+
+  function renderView(scope) {
+    var sum = state.view === 'summary';
+    document.querySelectorAll('[data-view]').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.view === state.view)); });
+    $('#duePanel').hidden = sum; $('#listPanel').hidden = sum; $('#summary').hidden = !sum;
+    if (sum) {
+      $('#summary').innerHTML = window.PulletSummary.render(scope, {
+        esc: esc, fmtDay: fmtDay, fmtNum: fmtNum, STATUS_CLS: STATUS_CLS, ref: state.ref
+      });
+    }
   }
 
   function renderRef() {
@@ -1360,9 +1618,15 @@ td.issue span { display: inline-block; padding: 2px 8px; border-radius: 6px; bac
     if (t.closest('.sck')) return; // checkbox เก็บตัวอย่าง ไม่เปิดฟอร์มแก้ไข
     var row = t.closest('[data-id]');
     if (row && !t.closest('dialog')) { openEdit(row.dataset.id); return; }
+    var vb = t.closest('[data-view]');
+    if (vb) {
+      state.view = vb.dataset.view;
+      try { history.replaceState(null, '', state.view === 'summary' ? '#summary' : location.pathname + location.search); } catch (er) { /* ignore */ }
+      render(); window.scrollTo(0, 0); return;
+    }
     var g = t.closest('[data-group]');
     if (g) { state.group = g.dataset.group; saveUI(); render(); return; }
-    if (t.closest('[data-kpi="issue"]')) { state.onlyIssue = true; $('#onlyIssue').checked = true; saveUI(); render(); document.getElementById('listTitle').scrollIntoView({ behavior: 'smooth' }); return; }
+    if (t.closest('[data-kpi="issue"]')) { state.view = 'table'; state.onlyIssue = true; $('#onlyIssue').checked = true; saveUI(); render(); document.getElementById('listTitle').scrollIntoView({ behavior: 'smooth' }); return; }
     var bAct = t.closest('[data-banner]');
     if (bAct) {
       var a = bAct.dataset.banner;

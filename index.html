@@ -55,6 +55,14 @@
   <main>
     <div class="banner" id="banner" hidden></div>
 
+    <nav class="viewbar" aria-label="มุมมอง">
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-view="table" aria-selected="true">ตารางฝูง</button>
+        <button type="button" role="tab" data-view="summary" aria-selected="false">Summary</button>
+      </div>
+      <div class="seg" id="groupSeg" role="tablist" aria-label="กลุ่ม"></div>
+    </nav>
+
     <section class="kpis" id="kpis" aria-label="สรุป"></section>
 
     <section class="panel" id="duePanel" aria-labelledby="dueTitle">
@@ -65,11 +73,10 @@
       <ul class="due-list" id="dueList"></ul>
     </section>
 
-    <section class="panel" aria-labelledby="listTitle">
+    <section class="panel" id="listPanel" aria-labelledby="listTitle">
       <div class="panel-head wrap">
         <h2 id="listTitle">ฝูงไก่สาว <span class="muted small">เรียงตามวันย้ายที่ใกล้ที่สุด</span></h2>
         <div class="filters">
-          <div class="seg" id="groupSeg" role="tablist"></div>
           <input type="search" id="search" placeholder="ค้นหาฟาร์ม / โรงเรือน / Vendor">
           <label class="check"><input type="checkbox" id="showMoved" checked> แสดงที่ย้ายแล้ว</label>
           <label class="check"><input type="checkbox" id="onlyIssue"> เฉพาะข้อมูลผิดปกติ</label>
@@ -113,7 +120,9 @@
       <p class="empty" id="empty" hidden>ไม่พบฝูงตามเงื่อนไขที่เลือก</p>
     </section>
 
-    <details class="panel notes">
+    <div class="sum-grid" id="summary" hidden></div>
+
+    <details class="panel notes" id="notesPanel">
       <summary>วิธีคำนวณ (เหมือนไฟล์ Excel เดิม)</summary>
       <ul>
         <li><b>อายุ (วัน)</b> = วันที่อ้างอิง − วันเริ่มเลี้ยง · <b>สัปดาห์-วัน</b> เช่น 18-6 = 18 สัปดาห์ 6 วัน (ตัวเลขสีเขียวเมื่ออายุ ≥ 105 วัน)</li>
@@ -187,6 +196,7 @@
   <script src="js/calc.js"></script>
   <script src="js/store.js"></script>
   <script src="js/export.js"></script>
+  <script src="js/summary.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
